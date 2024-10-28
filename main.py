@@ -1,5 +1,3 @@
-import pdb
-import yfinance as yf
 import logging
 
 from reporting import reset_decision_log, output_summary
