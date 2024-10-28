@@ -57,9 +57,9 @@ def get_nasdaq_assets():
     max_workers = min(CONFIG['MAX_WORKERS'], len(tickers))
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        logging.info(f"Fetching fundamental data for {len(tickers)} tickers...")
         # Submit tasks to the executor
         future_to_ticker = {executor.submit(fetch_ticker_data, ticker): ticker for ticker in tickers}
-        logging.info(f"Fetching fundamental data for {len(tickers)} tickers...")
         for future in tqdm(as_completed(future_to_ticker), total=len(tickers)):
             ticker_symbol = future_to_ticker[future]
             try:
@@ -94,10 +94,9 @@ def fetch_tickers(tickers, period="5d", interval="15m", group_by=None, progress=
         interval=interval,
         group_by=group_by,
         progress=progress,
-        threads=CONFIG['MAX_WORKERS']
+        threads=CONFIG['CONNECTION_POOL_SIZE']
     )
     return data
-
 
 def get_real_time_prices(tickers):
     """
@@ -115,7 +114,8 @@ def get_real_time_prices(tickers):
             period="1d",
             interval="1m",
             group_by='ticker',
-            progress=False
+            progress=False,
+            threads=CONFIG['CONNECTION_POOL_SIZE']
         )
         prices = {}
         for ticker in tickers:
@@ -133,7 +133,6 @@ def get_real_time_prices(tickers):
     except Exception as e:
         logging.error(f"Error fetching real-time prices: {e}")
         return {ticker: None for ticker in tickers}
-
 
 def is_market_open():
     """

@@ -18,7 +18,8 @@ CONFIG = {
     'RETRY_ATTEMPTS': 5,
     'LOG_FILE': 'trading_decision_log.txt',
     'LOG_LEVEL': logging.INFO,
-    'MAX_WORKERS': 5
+    'MAX_WORKERS': 5,
+    'CONNECTION_POOL_SIZE': False
 }
 
 # Configure logging with timestamps

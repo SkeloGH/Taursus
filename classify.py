@@ -3,6 +3,7 @@ import logging
 import yfinance as yf
 
 from config import CONFIG
+from ticker_data import fetch_tickers
 
 def classify_tickers(indicators):
     """
@@ -91,6 +92,6 @@ def identify_bullish_bearish(data, tickers):
             attempts += 1
             if attempts < len(time_periods):
                 logging.info(f"Adjusting data period to {time_periods[attempts]} and retrying...")
-                data = yf.download(tickers, period=time_periods[attempts], interval=interval, group_by='ticker', progress=False)
+                data = fetch_tickers(tickers, period=time_periods[attempts], interval=interval, group_by='ticker', progress=False)
 
     return bullish_tickers, bearish_tickers
