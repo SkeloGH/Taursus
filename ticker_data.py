@@ -1,10 +1,11 @@
-import yfinance as yf
-import time
-import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import datetime
+import logging
 import pytz
 import requests_cache
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import time
+from tqdm import tqdm
+import yfinance as yf
 
 
 from config import CONFIG
@@ -18,7 +19,12 @@ def fetch_ticker_data(ticker_symbol, session=None):
     retry_attempts = CONFIG['RETRY_ATTEMPTS']
     for attempt in range(retry_attempts):
         try:
-            ticker = yf.Ticker(ticker_symbol, session="test")
+            ticker = yf.Ticker(ticker_symbol, session=session)
+            # Ticker might not exist or has been delisted, also ticker might return as a string 
+            if not ticker.info or type(ticker) == str:
+                logging.warning(f"Ticker {ticker_symbol} does not exist or has been delisted.")
+                return None
+
             info = ticker.info
             ticker_data = {
                 'PE_ratio': info.get('trailingPE'),
@@ -53,8 +59,8 @@ def get_nasdaq_assets():
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         # Submit tasks to the executor
         future_to_ticker = {executor.submit(fetch_ticker_data, ticker): ticker for ticker in tickers}
-
-        for future in as_completed(future_to_ticker):
+        logging.info(f"Fetching fundamental data for {len(tickers)} tickers...")
+        for future in tqdm(as_completed(future_to_ticker), total=len(tickers)):
             ticker_symbol = future_to_ticker[future]
             try:
                 result = future.result()
@@ -114,9 +120,12 @@ def get_real_time_prices(tickers):
         prices = {}
         for ticker in tickers:
             try:
-                ticker_data = data.xs(ticker, level=1, axis=1)
-                latest_close = ticker_data['Close'].iloc[-1]
-                prices[ticker] = latest_close
+                ticker_data = data[ticker]
+                if ticker_data.empty:
+                    prices[ticker] = None
+                else:
+                    latest_close = ticker_data['Close'].iloc[-1]
+                    prices[ticker] = latest_close
             except Exception as e:
                 logging.error(f"Error extracting price for {ticker}: {e}")
                 prices[ticker] = None

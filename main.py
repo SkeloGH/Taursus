@@ -28,11 +28,11 @@ def main():
     try:
         if is_market_open():
             logging.info("Market is open. Fetching intraday data...")
-            data = fetch_tickers(fundamental_tickers, period="1d", interval="5m", group_by='ticker')
+            data = fetch_tickers(fundamental_tickers, period="1d", interval="5m", group_by='ticker', progress=True)
         else:
             logging.info("Market is closed or pre-market. Fetching extended data...")
             # Use a longer timeframe with 15-minute data for pre-market or after-hours analysis
-            data = fetch_tickers(fundamental_tickers, period="5d", interval="15m", group_by='ticker')
+            data = fetch_tickers(fundamental_tickers, period="5d", interval="15m", group_by='ticker', progress=True)
         if data.empty:
             logging.info("No data fetched. Please check data availability or try during trading hours.")
             return
