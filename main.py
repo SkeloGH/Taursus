@@ -2,14 +2,23 @@
 import logging
 
 from reporting import reset_decision_log, output_summary
-from tickers import selected_tickers
+from tickers import get_tickers_list_by_index, prompt_ticker_selection, prompt_custom_ticker_list
 from ticker_data import fetch_tickers, get_tickers_fundamentals, is_market_open
 from classify import identify_bullish_bearish
+from config import CONFIG
 
 def main():
     """
     Main function that executes the trading analysis.
     """
+    choice = prompt_ticker_selection()
+    # Get the tickers list based on the user's choice
+    selected_tickers = get_tickers_list_by_index(int(choice)-1)
+    list_name = CONFIG['TICKERS_LISTS'][int(choice) - 1].get('name')
+    # If user chose a custom list, get the selected tickers
+    if list_name == 'custom_tickers':
+        selected_tickers = prompt_custom_ticker_list()
+
     logging.info("Starting trading analysis...")
 
     # Reset the decision log if the --reset-log argument is provided

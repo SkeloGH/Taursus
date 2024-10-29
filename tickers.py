@@ -1,48 +1,37 @@
 """List of tickers from different sources."""
-from tickers_lists import (
-    bmv_tickers,
-    nasdaq_tickers,
-    other_tickers
-)
+from config import CONFIG
 
-# List of unique tickers between BMV and NASDAQ
-bmv_nasdaq_tickers = list(set(bmv_tickers.tickers + nasdaq_tickers.tickers))
+def get_tickers_list_by_index(index: int):
+    """Get tickers list based on the user's choice."""
+    return CONFIG['TICKERS_LISTS'][index].get('tickers')
 
-# List of all unique tickers
-all_tickers = list(set(bmv_nasdaq_tickers + other_tickers.tickers))
+def prompt_ticker_selection():
+    """Prompt the user to choose a list of tickers."""
+    while True:
+        print("Choose a list of tickers:")
 
-# Initialize list of tickers
-selected_tickers = []
+        for i, ticker_list in enumerate(CONFIG['TICKERS_LISTS']):
+            print(f"{i+1}. {ticker_list['name']} ({ticker_list['description']})")
 
-# Prompt the user to choose the list or lists of tickers
-while True:
-    print("Choose a list of tickers:")
-    print("1. BMV tickers")
-    print("2. NASDAQ tickers")
-    print("3. Other tickers")
-    print("4. BMV and NASDAQ tickers")
-    print("5. All tickers")
-    print("6. Specify tickers manually")
+        choice = input("Enter your choice: ")
 
-    choice = input("Enter 1, 2, 3, 4, 5, or 6: ")
-    if choice == "1":
-        selected_tickers = bmv_tickers.tickers
-        break
-    elif choice == "2":
-        selected_tickers = nasdaq_tickers.tickers
-        break
-    elif choice == "3":
-        selected_tickers = other_tickers.tickers
-        break
-    elif choice == "4":
-        selected_tickers = bmv_nasdaq_tickers
-        break
-    elif choice == "5":
-        selected_tickers = all_tickers
-        break
-    elif choice == "6":
-        selected_tickers = input("Enter the tickers separated by commas: ").split(",")
-        selected_tickers = [ticker.strip() for ticker in selected_tickers]
-        break
-    else:
-        print("Invalid choice. Please try again.")
+        if choice.isdigit() and 1 <= int(choice) <= len(CONFIG['TICKERS_LISTS']):
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+    return choice
+
+def prompt_custom_ticker_list():
+    """Prompt the user to enter a list of tickers."""
+    while True:
+        custom_tickers = input("Enter a list of tickers separated by commas: ").strip().split(',')
+        # Sanitize input
+        custom_tickers = [ticker.strip() for ticker in custom_tickers if ticker.strip()]
+
+        if not custom_tickers:
+            print("Invalid input. Please try again.")
+        else:
+            break
+
+    return custom_tickers

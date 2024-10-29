@@ -1,6 +1,6 @@
 """List of tickers from BMV."""
 tickers = [
-    "AA1.MX",
+    "AA",
     "AAL",
     "AAPL",
     "AAXJ",
