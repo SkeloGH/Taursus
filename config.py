@@ -1,3 +1,4 @@
+"""Configuration file for the trading analysis script."""
 import logging
 import argparse
 

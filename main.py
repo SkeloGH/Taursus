@@ -1,7 +1,9 @@
+"""Main script that executes the trading analysis."""
 import logging
 
 from reporting import reset_decision_log, output_summary
-from ticker_data import fetch_tickers, get_nasdaq_assets, is_market_open
+from tickers import selected_tickers
+from ticker_data import fetch_tickers, get_tickers_fundamentals, is_market_open
 from classify import identify_bullish_bearish
 
 def main():
@@ -14,23 +16,23 @@ def main():
     reset_decision_log()
 
     # Apply fundamental filters
-    logging.info("Applying fundamental filters...")
-    fundamental_tickers = get_nasdaq_assets()
-    if not fundamental_tickers:
+    logging.info("Collecting tickers data...")
+    filtered_tickers = get_tickers_fundamentals(selected_tickers)
+    if not filtered_tickers:
         logging.info("No tickers passed the fundamental filters.")
         return
     else:
-        logging.info(f"{len(fundamental_tickers)} tickers passed the fundamental filters: {', '.join(fundamental_tickers)}")
+        logging.info("%d tickers passed the fundamental filters: %s", len(filtered_tickers), ', '.join(filtered_tickers))
 
     # Determine appropriate data to download based on market status
     try:
         if is_market_open():
             logging.info("Market is open. Fetching intraday data...")
-            data = fetch_tickers(fundamental_tickers, period="1d", interval="5m", group_by='ticker', progress=True)
+            data = fetch_tickers(filtered_tickers, period="1d", interval="5m", group_by='ticker', progress=True)
         else:
             logging.info("Market is closed or pre-market. Fetching extended data...")
             # Use a longer timeframe with 15-minute data for pre-market or after-hours analysis
-            data = fetch_tickers(fundamental_tickers, period="5d", interval="15m", group_by='ticker', progress=True)
+            data = fetch_tickers(filtered_tickers, period="5d", interval="15m", group_by='ticker', progress=True)
         if data.empty:
             logging.info("No data fetched. Please check data availability or try during trading hours.")
             return
@@ -39,11 +41,9 @@ def main():
         return
 
     # Identify bullish and bearish tickers
-    logging.info("Identifying bullish and bearish tickers...")
-    bullish_tickers, bearish_tickers = identify_bullish_bearish(data, fundamental_tickers)
+    bullish_tickers, bearish_tickers = identify_bullish_bearish(data, filtered_tickers)
 
     # Generate and display summary
-    logging.info("Generating output summary...")
     output_summary(bullish_tickers, bearish_tickers)
 
 if __name__ == "__main__":

@@ -1,3 +1,7 @@
+"""
+This module contains functions for applying filters to stock data.
+"""
+
 def fundamentals(ticker_data):
     """
     Applies fundamental filters to a stock's data.

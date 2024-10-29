@@ -1,17 +1,18 @@
+"""Reporting module for the trading analysis script."""
 import logging
 import pandas as pd
 
 from config import CONFIG, args
 
 from indicators import generate_price_targets
-from ticker_data import get_real_time_prices
+from ticker_data import fetch_real_time_prices
 
 def reset_decision_log():
     """
     Resets the decision log if the --reset-log argument is provided.
     """
     if args.reset_log:
-        with open(CONFIG['LOG_FILE'], 'w') as f:
+        with open(file=CONFIG['LOG_FILE'], mode='w', encoding='utf-8') as f:
             f.write('')  # Reset the log file
         logging.info("The decision log has been reset.")
     else:
@@ -26,7 +27,9 @@ def log_summary(summary_df):
     """
     logging.info("Logging summary of trading actions...")
     for _, row in summary_df.iterrows():
-        logging.info(f"{row['Ticker']}: {row['Signal']} at {row['Current Price']} with target {row.get('Target Price', 'N/A')} and stop-loss {row.get('Stop-Loss', 'N/A')}")
+       logging.info("%s: %s at %s with target %s and stop-loss %s",
+             row['Ticker'], row['Signal'], row['Current Price'],
+             row.get('Target Price', 'N/A'), row.get('Stop-Loss', 'N/A'))
 
 def output_summary(bullish_tickers, bearish_tickers):
     """
@@ -36,14 +39,14 @@ def output_summary(bullish_tickers, bearish_tickers):
         bullish_tickers (dict): Dictionary of bullish tickers.
         bearish_tickers (dict): Dictionary of bearish tickers.
     """
-    logging.info("Processing summary of bullish and bearish tickers...")
+    logging.info("Generating summary of bullish and bearish tickers...")
     all_tickers = list(bullish_tickers.keys()) + list(bearish_tickers.keys())
 
     if not all_tickers:
-        logging.info("No tickers passed the fundamental filters.")
+        logging.info("No bullish or bearish tickers found.")
         return
 
-    prices = get_real_time_prices(all_tickers)
+    prices = fetch_real_time_prices(all_tickers)
     summary = []
     for ticker, data in bullish_tickers.items():
         price = prices.get(ticker)

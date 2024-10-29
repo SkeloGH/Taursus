@@ -1,6 +1,6 @@
-import talib
+"""Classify tickers as bullish or bearish based on indicators."""
 import logging
-import yfinance as yf
+import talib
 
 from config import CONFIG
 from ticker_data import fetch_tickers
@@ -43,6 +43,8 @@ def identify_bullish_bearish(data, tickers):
     interval = "5m"
     attempts = 0
     min_results = CONFIG['MIN_RESULTS']
+    
+    logging.info("Identifying bullish and bearish tickers...")
 
     while len(bullish_tickers) + len(bearish_tickers) < min_results and attempts < len(time_periods):
         logging.info(f"Attempt {attempts + 1}: RSI thresholds - Buy < {rsi_threshold_buy}, Sell > {rsi_threshold_sell}, Time period - {time_periods[attempts]}")

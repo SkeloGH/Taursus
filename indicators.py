@@ -1,3 +1,4 @@
+"""Calculates technical indicators and generates price targets."""
 import talib
 import numpy as np
 
