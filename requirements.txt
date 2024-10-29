@@ -30,6 +30,7 @@ setuptools==75.2.0
 six==1.16.0
 soupsieve==2.6
 TA-Lib==0.4.32
+tqdm==4.66.6
 tzdata==2024.2
 url-normalize==1.4.3
 urllib3==2.2.3
