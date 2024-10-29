@@ -58,7 +58,7 @@ tickers = [
     "ACTIVARA.MX",
     "ACTIVARB.MX",
     "ACWI",
-    "AC",
+    "AC.MX",
     "AFRM",
     "AGNC",
     "ALFA",
