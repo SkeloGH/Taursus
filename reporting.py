@@ -72,5 +72,5 @@ def output_summary(bullish_tickers, bearish_tickers):
             'Current Price': price
         })
     summary_df = pd.DataFrame(summary)
-    logging.info(summary_df)
+    logging.info("""Summary of trading actions: \n%s""", summary_df)
     log_summary(summary_df)
