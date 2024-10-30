@@ -11,7 +11,7 @@ from config import CONFIG
 import filters
 
 session = requests_cache.CachedSession('yfinance.cache')
-session.headers['User-agent'] = 'my-program/1.0'
+session.headers['User-agent'] = 'taursus/1.0'
 
 def fetch_ticker(ticker_symbol):
     """
@@ -64,7 +64,8 @@ def fetch_tickers(tickers_list, period="5d", interval="15m", group_by=None, prog
         interval=interval,
         group_by=group_by,
         progress=progress,
-        threads=CONFIG['CONNECTION_POOL_SIZE']
+        threads=CONFIG['CONNECTION_POOL_SIZE'],
+        session=session
     )
     return data
 
@@ -85,20 +86,18 @@ def fetch_real_time_prices(tickers_list):
             interval="1m",
             group_by='ticker',
             progress=False,
-            threads=CONFIG['CONNECTION_POOL_SIZE']
+            threads=CONFIG['CONNECTION_POOL_SIZE'],
+            session=session
         )
         prices = {}
         for ticker in tickers_list:
             try:
                 ticker_data = data[ticker]
-                if ticker_data.empty:
-                    prices[ticker] = None
-                else:
-                    latest_close = ticker_data['Close'].iloc[-1]
-                    prices[ticker] = latest_close
+                latest_close = ticker_data['Close'].iloc[-1]
+                prices[ticker] = latest_close
             except Exception as e:
-                logging.error(f"Error extracting price for {ticker}: {e}")
-                prices[ticker] = None
+                logging.error(f"Error extracting price for {ticker}: {e}, skipping...")
+                continue
         return prices
     except Exception as e:
         logging.error(f"Error fetching real-time prices: {e}")

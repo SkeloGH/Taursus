@@ -6,6 +6,8 @@ from tickers import get_tickers_list_by_index
 from user_prompts import prompt_ticker_selection, prompt_custom_ticker_list
 from ticker_data import fetch_tickers, get_tickers_fundamentals, is_market_open
 from classify import identify_bullish_bearish
+from indicators import generate_targets
+from ticker_data import fetch_real_time_prices
 from config import CONFIG
 
 def main():
@@ -52,9 +54,16 @@ def main():
 
     # Identify bullish and bearish tickers
     bullish_tickers, bearish_tickers = identify_bullish_bearish(data, filtered_tickers)
+    combined_tickers = list(bullish_tickers.keys()) + list(bearish_tickers.keys())
+    if not combined_tickers:
+        logging.info("No bullish or bearish tickers found.")
+        return
+    prices = fetch_real_time_prices(combined_tickers)
+    buy_targets, sell_targets = generate_targets(bullish_tickers, bearish_tickers, prices)
+    summary = buy_targets + sell_targets
 
     # Generate and display summary
-    output_summary(bullish_tickers, bearish_tickers)
+    output_summary(summary)
 
 if __name__ == "__main__":
     main()
