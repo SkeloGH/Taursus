@@ -60,6 +60,9 @@ def main():
         return
     prices = fetch_real_time_prices(combined_tickers)
     buy_targets, sell_targets = generate_targets(bullish_tickers, bearish_tickers, prices)
+    # Sort by risk/reward ratio
+    buy_targets.sort(key=lambda x: x['Risk-Reward Ratio'], reverse=True)
+    sell_targets.sort(key=lambda x: x['Risk-Reward Ratio'], reverse=True)
     summary = buy_targets + sell_targets
 
     # Generate and display summary
