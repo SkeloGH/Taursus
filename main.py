@@ -4,10 +4,9 @@ import logging
 from reporting import reset_decision_log, output_summary
 from tickers import get_tickers_list_by_index
 from user_prompts import prompt_ticker_selection, prompt_custom_ticker_list
-from ticker_data import fetch_tickers, get_tickers_fundamentals, is_market_open
+from ticker_data import fetch_tickers, fetch_real_time_prices, get_tickers_fundamentals, is_market_open
 from classify import identify_bullish_bearish
 from indicators import generate_targets
-from ticker_data import fetch_real_time_prices
 from config import CONFIG
 
 def main():
