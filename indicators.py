@@ -70,6 +70,8 @@ def generate_buy_targets(bullish_tickers, prices):
             
         buy_target, stop_loss = generate_price_targets(df)
         current_price = round(price, 2)
+        buy_target = round(buy_target, 2)
+        stop_loss = round(stop_loss, 2)
         risk = round(price - stop_loss, 2)
         reward = round(buy_target - current_price, 2)
         rrr = round(reward/risk, 2)
