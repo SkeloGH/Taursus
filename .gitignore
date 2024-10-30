@@ -5,3 +5,4 @@
 /trading_decision_log.txt
 /venv
 yfinance.cache
+.env
