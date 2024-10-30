@@ -63,6 +63,9 @@ def main():
     # Sort by risk/reward ratio
     buy_targets.sort(key=lambda x: x['Risk-Reward Ratio'], reverse=True)
     sell_targets.sort(key=lambda x: x['Risk-Reward Ratio'], reverse=True)
+    # Filter targets which are too risky
+    buy_targets = [target for target in buy_targets if target['Risk-Reward Ratio'] > CONFIG['MAX_RRR']]
+    sell_targets = [target for target in sell_targets if target['Risk-Reward Ratio'] > CONFIG['MAX_RRR']]
     summary = buy_targets + sell_targets
 
     # Generate and display summary

@@ -22,6 +22,7 @@ CONFIG = {
     'RSI_THRESHOLD_BUY': args.rsi_buy_threshold if args.rsi_buy_threshold else 25,
     'RSI_THRESHOLD_SELL': args.rsi_sell_threshold if args.rsi_sell_threshold else 75,
     'MIN_RESULTS': args.min_results if args.min_results else 5,
+    'MAX_RRR': 0.7,
     'RETRY_ATTEMPTS': 5,
     'LOG_FILE': 'trading_decision_log.txt',
     'LOG_LEVEL': logging.INFO,
