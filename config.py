@@ -22,7 +22,13 @@ CONFIG = {
     'RSI_THRESHOLD_BUY': args.rsi_buy_threshold if args.rsi_buy_threshold else 25,
     'RSI_THRESHOLD_SELL': args.rsi_sell_threshold if args.rsi_sell_threshold else 75,
     'MIN_RESULTS': args.min_results if args.min_results else 5,
-    'MAX_RRR': 0.7,
+    'MAX_RRR': 0.8,
+    'PE_RATIO_MIN': 10,
+    'PE_RATIO_MAX': 30,
+    'PB_RATIO_MAX': 3,
+    'ROE_RATIO_MAX': 10,
+    'CURRENT_RATIO_MAX': 1.5,
+    'DEBT_EQUITY_MAX': 0.5,
     'RETRY_ATTEMPTS': 5,
     'LOG_FILE': 'trading_decision_log.txt',
     'LOG_LEVEL': logging.INFO,
@@ -40,6 +46,7 @@ CONFIG = {
         {'name': 'custom_tickers', 'tickers': [], 'description': 'Custom'},
     ]
 }
+logging.debug(CONFIG)
 
 # Configure logging with timestamps
 handlers = [
