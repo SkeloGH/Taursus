@@ -1,7 +1,6 @@
 """Reporting module for the trading analysis script."""
 import logging
 import pandas as pd
-import numpy as np
 
 from config import CONFIG, args
 
@@ -23,6 +22,6 @@ def output_summary(summary):
     Parameters:
         summary (list): List of trading actions.
     """
-    logging.info("Generating summary...")    
+    logging.info("Generating summary...")
     summary_df = pd.DataFrame(summary)
-    logging.info("""Summary of trading actions: \n%s""", summary_df)
+    logging.info("""Summary of trading signals: \n%s""", summary_df)
