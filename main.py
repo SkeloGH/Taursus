@@ -33,7 +33,8 @@ def main():
         logging.info("No tickers passed the fundamental filters.")
         return
     else:
-        logging.info("%d tickers passed the fundamental filters: %s", len(filtered_tickers), ', '.join(filtered_tickers))
+        logging.info("""%d tickers passed the fundamental filters:
+                      %s""", len(filtered_tickers), ', '.join(filtered_tickers))
 
     # Determine appropriate data to download based on market status
     try:
@@ -60,11 +61,11 @@ def main():
     prices = fetch_real_time_prices(combined_tickers)
     buy_targets, sell_targets = generate_targets(bullish_tickers, bearish_tickers, prices)
     # Sort by risk/reward ratio
-    buy_targets.sort(key=lambda x: x['Risk-Reward Ratio'], reverse=True)
-    sell_targets.sort(key=lambda x: x['Risk-Reward Ratio'], reverse=True)
+    buy_targets.sort(key=lambda x: x['RRR'], reverse=True)
+    sell_targets.sort(key=lambda x: x['RRR'], reverse=True)
     # Filter targets which are too risky
-    buy_targets = [target for target in buy_targets if target['Risk-Reward Ratio'] > CONFIG['MAX_RRR']]
-    sell_targets = [target for target in sell_targets if target['Risk-Reward Ratio'] > CONFIG['MAX_RRR']]
+    buy_targets = [target for target in buy_targets if target['RRR'] > CONFIG['MAX_RRR']]
+    sell_targets = [target for target in sell_targets if target['RRR'] > CONFIG['MAX_RRR']]
     summary = buy_targets + sell_targets
 
     # Generate and display summary
