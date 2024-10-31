@@ -3,7 +3,7 @@ import logging
 import talib
 import pandas as pd
 import numpy as np
-from ticker_data import fetch_tickers
+from ticker_data import fetch_ticker
 
 def calculate_indicators(df):
     """
@@ -65,14 +65,16 @@ def generate_buy_targets(bullish_tickers, prices):
         price = prices.get(ticker)
         df = pd.DataFrame([data])
         df['Close'] = price
+        atr_period = 14
 
         # If data frame size is under the ATR period, we don't have enough data to generate targets
         # so we need to pull from a broader period
         if len(df) < 14 or np.isnan(price):
-            extended_prices = fetch_tickers([ticker], period='1mo', interval='1d')
-            # Validate that we have data for the ticker
-            if ticker in extended_prices:
-                df = pd.DataFrame(extended_prices[ticker])
+            ticker_data = fetch_ticker(ticker)
+            extended_prices = ticker_data.history(period='1mo', interval='1d')
+            # Validate that we have at least 14 days of data
+            if len(extended_prices) >= atr_period:
+                df = pd.DataFrame(extended_prices)
                 price = df['Close'].iloc[-1]
             else:
                 logging.warning("No data found for ticker %s", ticker)
