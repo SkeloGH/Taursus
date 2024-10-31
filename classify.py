@@ -47,7 +47,11 @@ def identify_bullish_bearish(data, tickers):
     logging.info("Identifying bullish and bearish tickers...")
 
     while len(bullish_tickers) + len(bearish_tickers) < min_results and attempts < len(time_periods):
-        logging.info(f"Attempt {attempts + 1}: RSI thresholds - Buy < {rsi_threshold_buy}, Sell > {rsi_threshold_sell}, Time period - {time_periods[attempts]}")
+        logging.info(
+            f"Attempt {attempts + 1}: "
+            f"RSI thresholds - Buy < {rsi_threshold_buy}, Sell > {rsi_threshold_sell}, "
+            f"Time period - {time_periods[attempts]}"
+        )
         for ticker in tickers:
             try:
                 ticker_data = data[ticker]
@@ -94,6 +98,10 @@ def identify_bullish_bearish(data, tickers):
             attempts += 1
             if attempts < len(time_periods):
                 logging.info(f"Adjusting data period to {time_periods[attempts]} and retrying...")
-                data = fetch_tickers(tickers, period=time_periods[attempts], interval=interval, group_by='ticker', progress=False)
+                data = fetch_tickers(tickers,
+                                     period=time_periods[attempts],
+                                     interval=interval,
+                                     group_by='ticker',
+                                     progress=False)
 
     return bullish_tickers, bearish_tickers
