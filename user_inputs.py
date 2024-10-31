@@ -1,5 +1,5 @@
 """Prompts for user input."""
-
+import sys
 from config import CONFIG
 
 def handle_keyboard_interrupt(func):
@@ -8,10 +8,10 @@ def handle_keyboard_interrupt(func):
         try:
             return func(*args, **kwargs)
         except KeyboardInterrupt:
-            return None
+            print("\nExiting...")
+            sys.exit()
     return wrapper
 
-@handle_keyboard_interrupt
 def prompt_ticker_selection():
     """Prompt the user to choose a list of tickers."""
     while True:
@@ -29,7 +29,6 @@ def prompt_ticker_selection():
 
     return choice
 
-@handle_keyboard_interrupt
 def prompt_custom_ticker_list():
     """Prompt the user to enter a list of tickers."""
     while True:

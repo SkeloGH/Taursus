@@ -3,12 +3,13 @@ import logging
 
 from reporting import reset_decision_log, output_summary
 from tickers import get_tickers_list_by_index
-from user_prompts import prompt_ticker_selection, prompt_custom_ticker_list
+from user_inputs import handle_keyboard_interrupt, prompt_ticker_selection, prompt_custom_ticker_list
 from ticker_data import fetch_tickers, fetch_real_time_prices, get_tickers_fundamentals, is_market_open
 from classify import identify_bullish_bearish
 from indicators import generate_targets
 from config import CONFIG
 
+@handle_keyboard_interrupt
 def main():
     """
     Main function that executes the trading analysis.
@@ -66,10 +67,10 @@ def main():
     # Filter targets which are too risky
     buy_targets = [target for target in buy_targets if target['RRR'] > CONFIG['MAX_RRR']]
     sell_targets = [target for target in sell_targets if target['RRR'] > CONFIG['MAX_RRR']]
-    summary = buy_targets + sell_targets
+    combined_targets = buy_targets + sell_targets
 
     # Generate and display summary
-    output_summary(summary)
+    output_summary(combined_targets)
 
 if __name__ == "__main__":
     main()
