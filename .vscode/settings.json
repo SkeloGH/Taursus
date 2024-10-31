@@ -1,5 +1,10 @@
 {
     "files.exclude": {
         "**/venv": true
-    }
+    },
+    "pylint.args": [
+        "--rcfile=/mnt/c/Users/ghaar/Documents/Code/Taursus/.pylintrc",
+        "--disable=broad-exception-caught,logging-fstring-interpolation"
+    ],
+    "pylint.importStrategy": "useBundled"
 }

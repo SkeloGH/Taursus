@@ -5,6 +5,7 @@
 		}
 	],
 	"settings": {
-		"python.defaultInterpreterPath": "python"
+		"python.defaultInterpreterPath": ".venv/bin/python",
+		"pylint.interpreter": [".venv/bin/python"]
 	}
 }
