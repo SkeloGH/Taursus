@@ -2,7 +2,6 @@
 This module contains functions for applying filters to stock data.
 """
 
-import logging
 from config import CONFIG
 
 def fundamentals(ticker_data,
@@ -22,7 +21,6 @@ def fundamentals(ticker_data,
         bool: True if the ticker passes the filters, False otherwise.
     """
     if None in ticker_data.values():
-        logging.warning("Ticker data is missing values, skipping...")
         return False
 
     return (
