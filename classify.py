@@ -43,7 +43,7 @@ def identify_bullish_bearish(data, tickers):
     interval = "5m"
     attempts = 0
     min_results = CONFIG['MIN_RESULTS']
-    
+
     logging.info("Identifying bullish and bearish tickers...")
 
     while len(bullish_tickers) + len(bearish_tickers) < min_results and attempts < len(time_periods):

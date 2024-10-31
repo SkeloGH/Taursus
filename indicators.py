@@ -50,6 +50,16 @@ def generate_price_targets(df):
     return buy_target, stop_loss
 
 def generate_buy_targets(bullish_tickers, prices):
+    """
+    Generates buy target price and stop-loss level using Average True Range (ATR).
+
+    Parameters:
+        bullish_tickers (dict): Dictionary of bullish tickers.
+        prices (dict): Dictionary of prices for each ticker.
+
+    Returns:
+        list: List of buy targets.
+    """
     buy_targets = []
     for ticker, data in bullish_tickers.items():
         price = prices.get(ticker)
@@ -67,7 +77,7 @@ def generate_buy_targets(bullish_tickers, prices):
             else:
                 logging.warning("No data found for ticker %s", ticker)
                 continue
-            
+
         buy_target, stop_loss = generate_price_targets(df)
         current_price = round(price, 2)
         buy_target = round(buy_target, 2)
@@ -81,14 +91,23 @@ def generate_buy_targets(bullish_tickers, prices):
             'Current Price': current_price,
             'Target Price': buy_target,
             'Stop-Loss': stop_loss,
-            'Risk-Reward Ratio': rrr
+            'RRR': rrr # Risk Reward Ratio
         })
 
     return buy_targets
 
 def generate_sell_targets(bearish_tickers, prices):
+    """
+    Generates sell target price and stop-loss level using Average True Range (ATR).
+
+    Parameters:
+        df (DataFrame): DataFrame with price data and indicators.
+
+    Returns:
+        tuple: Sell target price and stop-loss level.
+    """
     sell_targets = []
-    for ticker, data in bearish_tickers.items():
+    for ticker, data in bearish_tickers.items(): # pylint: disable=unused-variable
         price = prices.get(ticker)
         if price is None:
             continue
@@ -104,12 +123,23 @@ def generate_sell_targets(bearish_tickers, prices):
             'Current Price': current_price,
             'Target Price': target_price,
             'Stop-Loss': stop_loss,
-            'Risk-Reward Ratio': rrr
+            'RRR': rrr # Risk Reward Ratio
         })
 
     return sell_targets
 
 def generate_targets(bullish_tickers, bearish_tickers, prices):
+    """
+    Generates buy and sell targets for bullish and bearish tickers.
+
+    Parameters:
+        bullish_tickers (dict): Dictionary of bullish tickers.
+        bearish_tickers (dict): Dictionary of bearish tickers.
+        prices (dict): Dictionary of prices for each ticker.
+
+    Returns:
+        tuple: Buy targets and sell targets.
+    """
     buy_targets = generate_buy_targets(bullish_tickers, prices)
     sell_targets = generate_sell_targets(bearish_tickers, prices)
     return buy_targets, sell_targets

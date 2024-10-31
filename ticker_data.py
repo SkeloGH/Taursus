@@ -47,11 +47,16 @@ def fetch_tickers(tickers_list, period="5d", interval="15m", group_by=None, prog
 
     Parameters:
         tickers (list): List of ticker symbols.
-        period (str): Time period for the data (e.g. "1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max").
-        interval (str): Time interval between data points (e.g. "1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo").
+        period (enum string): Time period for the data.
+        interval (str): Time interval between data points
         group_by (str): Group data by ticker or date (e.g. "ticker", "date").
         progress (bool): Show progress bar.
 
+    Possible values for period:
+    "1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"
+
+    Possible values for interval:
+    "1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"
     Returns:
         dict: Dictionary with ticker symbols as keys and current prices as values.
     """
@@ -145,11 +150,9 @@ def get_tickers_fundamentals(tickers):
     fundamental_tickers = []
 
     for ticker in tqdm(tickers):
-        # fetch ticker data
         ticker_data = fetch_ticker(ticker)
         ticker_fundamentals = get_ticker_fundamentals(ticker_data)
 
-        # check if ticker passes fundamental filters
         if ticker_fundamentals is not None and filters.fundamentals(ticker_fundamentals):
             fundamental_tickers.append(ticker)
 
