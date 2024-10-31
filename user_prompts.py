@@ -2,6 +2,16 @@
 
 from config import CONFIG
 
+def handle_keyboard_interrupt(func):
+    """Decorator to handle KeyboardInterrupt."""
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except KeyboardInterrupt:
+            return None
+    return wrapper
+
+@handle_keyboard_interrupt
 def prompt_ticker_selection():
     """Prompt the user to choose a list of tickers."""
     while True:
@@ -19,6 +29,7 @@ def prompt_ticker_selection():
 
     return choice
 
+@handle_keyboard_interrupt
 def prompt_custom_ticker_list():
     """Prompt the user to enter a list of tickers."""
     while True:
