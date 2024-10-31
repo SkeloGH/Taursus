@@ -1,7 +1,6 @@
 """ Ticker data functions. """
 import datetime
 import logging
-import time
 import pytz
 import requests_cache
 from tqdm import tqdm
@@ -38,10 +37,14 @@ def fetch_ticker(ticker_symbol):
                 "Error fetching data for %s, attempt %d/%d: %s",
                 ticker_symbol, attempt + 1, retry_attempts, e
             )
-            time.sleep(2)
     return None
 
-def fetch_tickers(tickers_list, period="5d", interval="15m", group_by=None, progress=False):
+def fetch_tickers(tickers_list,
+                  period="5d",
+                  interval="15m",
+                  group_by=None,
+                  progress=False,
+                  incremental=False):
     """
     Retrieves the real-time prices for multiple tickers using yfinance.
 
@@ -52,27 +55,47 @@ def fetch_tickers(tickers_list, period="5d", interval="15m", group_by=None, prog
         group_by (str): Group data by ticker or date (e.g. "ticker", "date").
         progress (bool): Show progress bar.
 
-    Possible values for period:
-    "1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"
+    Possible values for period and interval: see config.py
 
-    Possible values for interval:
-    "1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"
     Returns:
         dict: Dictionary with ticker symbols as keys and current prices as values.
     """
     if not tickers_list:
         return {}
 
-    data = yf.download(
-        tickers=tickers_list,
-        period=period,
-        interval=interval,
-        group_by=group_by,
-        progress=progress,
-        threads=CONFIG['CONNECTION_POOL_SIZE'],
-        session=session
-    )
-    return data
+    try:
+        logging.info("Fetching tickers data for tickers: %s", ', '.join(tickers_list))
+        data = yf.download(
+            tickers=tickers_list,
+            period=period,
+            interval=interval,
+            group_by=group_by,
+            progress=progress,
+            threads=CONFIG['CONNECTION_POOL_SIZE'],
+            session=session
+        )
+        # If incremental=True, when the tickers list size mismatch or is empty, adjust period and interval until they match,
+        # max attempt is 10
+        if incremental:
+            attempt = 1
+            while len(data) != len(tickers_list) and attempt < 10:
+                periods = CONFIG['TICKER_FETCHING_PERIODS']
+                period = periods[attempt % len(periods)]
+
+                data = yf.download(
+                    tickers_list,
+                    period=period,
+                    interval="1d",
+                    group_by=group_by,
+                    progress=progress,
+                    threads=CONFIG['CONNECTION_POOL_SIZE'],
+                    session=session
+                )
+                attempt += 1
+        return data
+    except Exception as e:
+        logging.error(f"Error fetching tickers: {e}")
+        return {ticker: None for ticker in tickers_list}
 
 def fetch_real_time_prices(tickers_list):
     """
@@ -85,16 +108,15 @@ def fetch_real_time_prices(tickers_list):
         dict: Dictionary with ticker symbols as keys and current prices as values.
     """
     try:
-        data = yf.download(
-            tickers=tickers_list,
+        data = fetch_tickers(tickers_list,
             period="1d",
             interval="1m",
             group_by='ticker',
             progress=False,
-            threads=CONFIG['CONNECTION_POOL_SIZE'],
-            session=session
+            incremental=True
         )
         prices = {}
+
         for ticker in tickers_list:
             try:
                 ticker_data = data[ticker]
@@ -103,6 +125,7 @@ def fetch_real_time_prices(tickers_list):
             except Exception as e:
                 logging.error(f"Error extracting price for {ticker}: {e}, skipping...")
                 continue
+
         return prices
     except Exception as e:
         logging.error(f"Error fetching real-time prices: {e}")
