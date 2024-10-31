@@ -1,6 +1,8 @@
 """Configuration file for the trading analysis script."""
-import logging
+import sys
 import argparse
+import logging
+
 from tickers_lists import (
     bmv_tickers,
     nasdaq_tickers,
@@ -31,7 +33,6 @@ CONFIG = {
     'DEBT_EQUITY_MAX': 0.5,
     'RETRY_ATTEMPTS': 5,
     'LOG_FILE': 'trading_decision_log.txt',
-    'LOG_LEVEL': logging.INFO,
     'MAX_WORKERS': 5,
     'CONNECTION_POOL_SIZE': False,
     'TICKERS_LISTS': [
@@ -44,16 +45,15 @@ CONFIG = {
          'tickers': bmv_tickers.tickers + nasdaq_tickers.tickers + other_tickers.tickers,
          'description': 'All'},
         {'name': 'custom_tickers', 'tickers': [], 'description': 'Custom'},
-    ]
+    ],
+    'TICKER_FETCHING_PERIODS': ["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"],
+    'TICKER_FETCHING_INTERVALS': ["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"],
 }
-logging.debug(CONFIG)
 
 # Configure logging with timestamps
 handlers = [
-    logging.StreamHandler(),
+    logging.StreamHandler(sys.stdout),
     logging.FileHandler(CONFIG['LOG_FILE'])
 ]
 
-logging.basicConfig(handlers=handlers,
-                    level=CONFIG['LOG_LEVEL'],
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(handlers=handlers, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
