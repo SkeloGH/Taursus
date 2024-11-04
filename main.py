@@ -4,7 +4,7 @@ import logging
 from reporting import reset_decision_log, output_summary
 from tickers import get_tickers_list_by_index
 from user_inputs import handle_keyboard_interrupt, prompt_ticker_selection, prompt_custom_ticker_list
-from ticker_data import fetch_tickers, fetch_real_time_prices, get_tickers_fundamentals, is_market_open
+from ticker_data import fetch_tickers, fetch_real_time_prices, filter_tickers_by_fundamentals, is_market_open
 from classify import identify_bullish_bearish
 from indicators import generate_targets
 from config import CONFIG
@@ -29,7 +29,7 @@ def main():
 
     # Apply fundamental filters
     logging.info("Collecting tickers data...")
-    filtered_tickers = get_tickers_fundamentals(selected_tickers)
+    filtered_tickers = filter_tickers_by_fundamentals(selected_tickers)
     if not filtered_tickers:
         logging.info("No tickers passed the fundamental filters.")
         return

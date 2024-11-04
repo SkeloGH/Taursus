@@ -171,7 +171,7 @@ def get_ticker_fundamentals(ticker_data):
     }
     return fundamentals
 
-def get_tickers_fundamentals(tickers):
+def filter_tickers_by_fundamentals(tickers):
     """
     Retrieves tickers that pass the fundamental filters.
 
