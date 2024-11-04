@@ -66,7 +66,7 @@ def identify_bullish_bearish(data, tickers):
                 ticker_high = ticker_data['High'].iloc[-1] if 'High' in ticker_data else close_prices_value
                 ticker_low = ticker_data['Low'].iloc[-1] if 'Low' in ticker_data else close_prices_value
 
-                if rsi_value < rsi_threshold_buy and macd_value > macd_signal_value:
+                if rsi_value <= rsi_threshold_buy and macd_value >= macd_signal_value:
                     bullish_tickers[ticker] = {
                         'RSI': rsi_value,
                         'MACD': macd_value,
@@ -75,7 +75,7 @@ def identify_bullish_bearish(data, tickers):
                         'Low': ticker_low,
                         'Close': close_prices_value
                     }
-                elif rsi_value > rsi_threshold_sell and macd_value < macd_signal_value:
+                elif rsi_value >= rsi_threshold_sell and macd_value <= macd_signal_value:
                     bearish_tickers[ticker] = {
                         'RSI': rsi_value,
                         'MACD': macd_value,
