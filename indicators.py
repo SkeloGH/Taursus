@@ -1,9 +1,7 @@
 """Calculates technical indicators and generates price targets."""
-import logging
 import talib
 import pandas as pd
 import numpy as np
-from ticker_data import fetch_ticker
 
 def calculate_indicators(df):
     """
@@ -61,24 +59,15 @@ def generate_buy_targets(bullish_tickers, prices):
         list: List of buy targets.
     """
     buy_targets = []
+    atr_period = 14
+
     for ticker, data in bullish_tickers.items():
         price = prices.get(ticker)
         df = pd.DataFrame([data])
         df['Close'] = price
-        atr_period = 14
 
-        # If data frame size is under the ATR period, we don't have enough data to generate targets
-        # so we need to pull from a broader period
-        if len(df) < 14 or np.isnan(price):
-            ticker_data = fetch_ticker(ticker)
-            extended_prices = ticker_data.history(period='1mo', interval='1d')
-            # Validate that we have at least 14 days of data
-            if len(extended_prices) >= atr_period:
-                df = pd.DataFrame(extended_prices)
-                price = df['Close'].iloc[-1]
-            else:
-                logging.warning("No data found for ticker %s", ticker)
-                continue
+        if len(df) < atr_period or np.isnan(price):
+            continue
 
         buy_target, stop_loss = generate_price_targets(df)
         current_price = round(price, 2)
@@ -145,3 +134,31 @@ def generate_targets(bullish_tickers, bearish_tickers, prices):
     buy_targets = generate_buy_targets(bullish_tickers, prices)
     sell_targets = generate_sell_targets(bearish_tickers, prices)
     return buy_targets, sell_targets
+
+def get_ticker_fundamentals(ticker_data):
+    """
+    Retrieves fundamental data for a ticker.
+
+    Parameters:
+        ticker_data (Ticker): Ticker object containing financial data.
+
+    Returns:
+        dict: Dictionary with fundamental data for the ticker.
+    """
+    info = ticker_data.info
+    fundamentals = {
+        'trailing_eps': info.get('trailingEps'),
+        'earnings_growth': info.get('earningsGrowth'),
+        'revenue_growth': info.get('revenueGrowth'),
+        'current_ratio': info.get('currentRatio'),
+        'short_ratio': info.get('shortRatio'),
+        'debt_equity': info.get('debtToEquity'),
+        'peg_ratio': info.get('trailingPegRatio'),
+        'pb_ratio': info.get('priceToBook'),
+        'pe_ratio': info.get('trailingPE'),
+        'recommendation_mean': info.get('recommendationMean'),
+        'return_on_equity': info.get('returnOnEquity'),
+        'industry': info.get('industry'),
+        'sector': info.get('sector'),
+    }
+    return fundamentals

@@ -38,9 +38,14 @@ CONFIG = {
     'RECOMMENDATION_MEAN_MAX': 2,
     'ROE_RATIO_MIN': 10,
     # Classification thresholds
-    'MAX_RRR': 0.8,
+    'MACD_FAST_PERIOD': 12,
+    'MACD_SLOW_PERIOD': 26,
+    'MACD_SIGNAL_PERIOD': 9,
+    'RSI_PERIOD': 14,
     'RSI_THRESHOLD_BUY': args.rsi_buy_threshold if args.rsi_buy_threshold else 30,
     'RSI_THRESHOLD_SELL': args.rsi_sell_threshold if args.rsi_sell_threshold else 65,
+    # Risk management
+    'MAX_RRR': 0.8,
     # Fetching parameters
     'MIN_RESULTS': args.min_results if args.min_results else 5,
     'RETRY_ATTEMPTS': 5,

@@ -3,9 +3,10 @@ import logging
 
 from reporting import reset_decision_log, output_summary
 from tickers import get_tickers_list_by_index
+from filters import filter_tickers_by_fundamentals
 from user_inputs import handle_keyboard_interrupt, prompt_ticker_selection, prompt_custom_ticker_list
-from ticker_data import fetch_tickers, fetch_real_time_prices, filter_tickers_by_fundamentals, is_market_open
-from classify import identify_bullish_bearish
+from ticker_data import fetch_tickers, fetch_tickers_prices, is_market_open
+from classify import classify_tickers
 from indicators import generate_targets
 from config import CONFIG
 
@@ -29,23 +30,22 @@ def main():
 
     # Apply fundamental filters
     logging.info("Collecting tickers data...")
-    filtered_tickers = filter_tickers_by_fundamentals(selected_tickers)
-    if not filtered_tickers:
+    compliant_tickers = filter_tickers_by_fundamentals(selected_tickers)
+    if not compliant_tickers:
         logging.info("No tickers passed the fundamental filters.")
         return
     else:
         logging.info("""%d tickers passed the fundamental filters:
-                      %s""", len(filtered_tickers), ', '.join(filtered_tickers))
+                      %s""", len(compliant_tickers), ', '.join(compliant_tickers))
 
     # Determine appropriate data to download based on market status
     try:
         if is_market_open():
             logging.info("Market is open. Fetching intraday data...")
-            data = fetch_tickers(filtered_tickers, period="1d", interval="5m", group_by='ticker', progress=True)
+            data = fetch_tickers(compliant_tickers, period="1d", interval="5m", group_by='ticker', progress=True)
         else:
             logging.info("Market is closed or pre-market. Fetching extended data...")
-            # Use a longer timeframe with 15-minute data for pre-market or after-hours analysis
-            data = fetch_tickers(filtered_tickers, period="5d", interval="15m", group_by='ticker', progress=True)
+            data = fetch_tickers(compliant_tickers, period="5d", interval="15m", group_by='ticker', progress=True)
         if data.empty:
             logging.info("No data fetched. Please check data availability or try during trading hours.")
             return
@@ -53,13 +53,11 @@ def main():
         logging.error(f"Error downloading data: {e}")
         return
 
-    # Identify bullish and bearish tickers
-    bullish_tickers, bearish_tickers = identify_bullish_bearish(data, filtered_tickers)
-    combined_tickers = list(bullish_tickers.keys()) + list(bearish_tickers.keys())
-    if not combined_tickers:
-        logging.info("No bullish or bearish tickers found.")
-        return
-    prices = fetch_real_time_prices(combined_tickers)
+    # Identify the top movers
+    combined_tickers, bullish_tickers, bearish_tickers = classify_tickers(data, compliant_tickers)
+    # Fetch prices
+    prices = fetch_tickers_prices(combined_tickers)
+    # Generate buy and sell targets
     buy_targets, sell_targets = generate_targets(bullish_tickers, bearish_tickers, prices)
     # Sort by risk/reward ratio
     buy_targets.sort(key=lambda x: x['RRR'], reverse=True)

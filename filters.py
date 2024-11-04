@@ -1,8 +1,11 @@
 """
 This module contains functions for applying filters to stock data.
 """
+from tqdm import tqdm
 
 from config import CONFIG
+from ticker_data import fetch_ticker
+from indicators import get_ticker_fundamentals
 
 def fundamentals(ticker_data):
     """
@@ -35,3 +38,22 @@ def fundamentals(ticker_data):
         (ticker_data['return_on_equity'] >= CONFIG['ROE_RATIO_MIN'] and
         ticker_data['return_on_equity'] <= CONFIG['ROE_RATIO_MAX'])
     )
+
+def filter_tickers_by_fundamentals(tickers):
+    """
+    Retrieves tickers that pass the fundamental filters.
+
+    Returns:
+        list: List of tickers that meet fundamental criteria.
+    """
+    fundamental_tickers = []
+
+    for ticker in tqdm(tickers):
+        ticker_data = fetch_ticker(ticker)
+        ticker_fundamentals = get_ticker_fundamentals(ticker_data)
+
+        if ticker_fundamentals is not None and fundamentals(ticker_fundamentals):
+            fundamental_tickers.append(ticker)
+
+
+    return fundamental_tickers

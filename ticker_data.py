@@ -3,11 +3,13 @@ import datetime
 import logging
 import pytz
 import requests_cache
-from tqdm import tqdm
+import pandas as pd
+import numpy as np
+
 import yfinance as yf
 
 from config import CONFIG
-import filters
+
 
 session = requests_cache.CachedSession('yfinance.cache')
 session.headers['User-agent'] = 'taursus/1.0'
@@ -54,41 +56,45 @@ def fetch_tickers(tickers_list,
         interval (str): Time interval between data points
         group_by (str): Group data by ticker or date (e.g. "ticker", "date").
         progress (bool): Show progress bar.
+        incremental (bool): If True, adjust period and interval until they match
 
     Possible values for period and interval: see config.py
 
     Returns:
         dict: Dictionary with ticker symbols as keys and current prices as values.
     """
+    threads = CONFIG['CONNECTION_POOL_SIZE']
+    periods = CONFIG['TICKER_FETCHING_PERIODS']
+    max_attempts = CONFIG['RETRY_ATTEMPTS']
     if not tickers_list:
         return {}
 
     try:
-        logging.info("Fetching tickers data for tickers: %s", ', '.join(tickers_list))
+        logging.info("Fetching tickers data for %d tickers...", len(tickers_list))
         data = yf.download(
             tickers=tickers_list,
             period=period,
             interval=interval,
             group_by=group_by,
             progress=progress,
-            threads=CONFIG['CONNECTION_POOL_SIZE'],
+            threads=threads,
             session=session
         )
-        # If incremental=True, when the tickers list size mismatch or is empty, adjust period and interval until they match,
+        # If incremental=True, when the tickers list size mismatch or is empty,
+        # adjust period and interval until they match,
         # max attempt is 10
         if incremental:
             attempt = 1
-            while len(data) != len(tickers_list) and attempt < 10:
-                periods = CONFIG['TICKER_FETCHING_PERIODS']
+            while len(data) != len(tickers_list) and attempt < max_attempts:
                 period = periods[attempt % len(periods)]
 
                 data = yf.download(
                     tickers_list,
-                    period=period,
+                    period="1mo",
                     interval="1d",
                     group_by=group_by,
                     progress=progress,
-                    threads=CONFIG['CONNECTION_POOL_SIZE'],
+                    threads=threads,
                     session=session
                 )
                 attempt += 1
@@ -97,7 +103,7 @@ def fetch_tickers(tickers_list,
         logging.error(f"Error fetching tickers: {e}")
         return {ticker: None for ticker in tickers_list}
 
-def fetch_real_time_prices(tickers_list):
+def fetch_tickers_prices(tickers_list):
     """
     Retrieves the real-time prices for multiple tickers.
 
@@ -107,6 +113,7 @@ def fetch_real_time_prices(tickers_list):
     Returns:
         dict: Dictionary with ticker symbols as keys and current prices as values.
     """
+    atr_period = 14
     try:
         data = fetch_tickers(tickers_list,
             period="1d",
@@ -122,6 +129,16 @@ def fetch_real_time_prices(tickers_list):
                 ticker_data = data[ticker]
                 latest_close = ticker_data['Close'].iloc[-1]
                 prices[ticker] = latest_close
+                if len(prices) < atr_period or np.isnan(latest_close):
+                    ticker_data = fetch_ticker(ticker)
+                    extended_prices = ticker_data.history(period='1mo', interval='1d')
+                    # Validate that we have at least 14 days of data
+                    if len(extended_prices) >= atr_period:
+                        df = pd.DataFrame(extended_prices)
+                        prices[ticker] = df['Close'].iloc[-1]
+                    else:
+                        logging.warning("No data found for ticker %s", ticker)
+                        continue
             except Exception as e:
                 logging.error(f"Error extracting price for {ticker}: {e}, skipping...")
                 continue
@@ -142,50 +159,3 @@ def is_market_open():
     if ny_time.weekday() < 5 and datetime.time(9, 30) <= ny_time.time() <= datetime.time(16, 0):
         return True
     return False
-
-def get_ticker_fundamentals(ticker_data):
-    """
-    Retrieves fundamental data for a ticker.
-
-    Parameters:
-        ticker_data (Ticker): Ticker object containing financial data.
-
-    Returns:
-        dict: Dictionary with fundamental data for the ticker.
-    """
-    info = ticker_data.info
-    fundamentals = {
-        'trailing_eps': info.get('trailingEps'),
-        'earnings_growth': info.get('earningsGrowth'),
-        'revenue_growth': info.get('revenueGrowth'),
-        'current_ratio': info.get('currentRatio'),
-        'short_ratio': info.get('shortRatio'),
-        'debt_equity': info.get('debtToEquity'),
-        'peg_ratio': info.get('trailingPegRatio'),
-        'pb_ratio': info.get('priceToBook'),
-        'pe_ratio': info.get('trailingPE'),
-        'recommendation_mean': info.get('recommendationMean'),
-        'return_on_equity': info.get('returnOnEquity'),
-        'industry': info.get('industry'),
-        'sector': info.get('sector'),
-    }
-    return fundamentals
-
-def filter_tickers_by_fundamentals(tickers):
-    """
-    Retrieves tickers that pass the fundamental filters.
-
-    Returns:
-        list: List of tickers that meet fundamental criteria.
-    """
-    fundamental_tickers = []
-
-    for ticker in tqdm(tickers):
-        ticker_data = fetch_ticker(ticker)
-        ticker_fundamentals = get_ticker_fundamentals(ticker_data)
-
-        if ticker_fundamentals is not None and filters.fundamentals(ticker_fundamentals):
-            fundamental_tickers.append(ticker)
-
-
-    return fundamental_tickers
