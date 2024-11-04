@@ -155,11 +155,19 @@ def get_ticker_fundamentals(ticker_data):
     """
     info = ticker_data.info
     fundamentals = {
-        'PE_ratio': info.get('trailingPE'),
-        'PB_ratio': info.get('priceToBook'),
-        'ROE': info.get('returnOnEquity', 0) * 100,
-        'Current_Ratio': info.get('currentRatio'),
-        'Debt_Equity': info.get('debtToEquity', 0) / 100
+        'trailing_eps': info.get('trailingEps'),
+        'earnings_growth': info.get('earningsGrowth'),
+        'revenue_growth': info.get('revenueGrowth'),
+        'current_ratio': info.get('currentRatio'),
+        'short_ratio': info.get('shortRatio'),
+        'debt_equity': info.get('debtToEquity'),
+        'peg_ratio': info.get('trailingPegRatio'),
+        'pb_ratio': info.get('priceToBook'),
+        'pe_ratio': info.get('trailingPE'),
+        'recommendation_mean': info.get('recommendationMean'),
+        'return_on_equity': info.get('returnOnEquity'),
+        'industry': info.get('industry'),
+        'sector': info.get('sector'),
     }
     return fundamentals
 

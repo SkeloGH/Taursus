@@ -4,13 +4,7 @@ This module contains functions for applying filters to stock data.
 
 from config import CONFIG
 
-def fundamentals(ticker_data,
-                 pe_min=CONFIG['PE_RATIO_MIN'],
-                 pe_max=CONFIG['PE_RATIO_MAX'],
-                 pb_max=CONFIG['PB_RATIO_MAX'],
-                 roe_max=CONFIG['ROE_RATIO_MAX'],
-                 current_ratio_max=CONFIG['CURRENT_RATIO_MAX'],
-                 debt_equity_max=CONFIG['DEBT_EQUITY_MAX']):
+def fundamentals(ticker_data):
     """
     Inclusively filters tickers based on fundamental data.
 
@@ -24,9 +18,20 @@ def fundamentals(ticker_data,
         return False
 
     return (
-        pe_min <= ticker_data['PE_ratio'] <= pe_max or
-        ticker_data['PB_ratio'] < pb_max or
-        ticker_data['ROE'] > roe_max or
-        ticker_data['Current_Ratio'] > current_ratio_max or
-        ticker_data['Debt_Equity'] < debt_equity_max
+        ticker_data['trailing_eps'] >= CONFIG['TRAILING_EPS_MIN'] or
+        ticker_data['earnings_growth'] >= CONFIG['EARNINGS_GROWTH_MIN'] or
+        ticker_data['revenue_growth'] >= CONFIG['REVENUE_GROWTH_MIN'] or
+        ticker_data['current_ratio'] >= CONFIG['CURRENT_RATIO_MIN'] or
+        ticker_data['short_ratio'] <= CONFIG['SHORT_RATIO_MAX'] or
+        ticker_data['debt_equity'] <= CONFIG['DEBT_EQUITY_MAX'] or
+        (ticker_data['peg_ratio'] >= CONFIG['PEG_RATIO_MIN'] and
+        ticker_data['peg_ratio'] <= CONFIG['PEG_RATIO_MAX']) or
+        (ticker_data['pb_ratio'] >= CONFIG['PB_RATIO_MIN'] and
+        ticker_data['pb_ratio'] <= CONFIG['PB_RATIO_MAX']) or
+        (ticker_data['pe_ratio'] >= CONFIG['PE_RATIO_MIN'] and
+        ticker_data['pe_ratio'] <= CONFIG['PE_RATIO_MAX']) or
+        (ticker_data['recommendation_mean'] >= CONFIG['RECOMMENDATION_MEAN_MIN'] and
+        ticker_data['recommendation_mean'] <= CONFIG['RECOMMENDATION_MEAN_MAX']) or
+        (ticker_data['return_on_equity'] >= CONFIG['ROE_RATIO_MIN'] and
+        ticker_data['return_on_equity'] <= CONFIG['ROE_RATIO_MAX'])
     )

@@ -21,20 +21,36 @@ parser.set_defaults(reset_log=True,
 args = parser.parse_known_args()[0]
 
 CONFIG = {
+    # Fundamental analysis thresholds
+    'TRAILING_EPS_MIN': 2,
+    'EARNINGS_GROWTH_MIN': 0.20,
+    'REVENUE_GROWTH_MIN': 0.20,
+    'CURRENT_RATIO_MIN': 1.5, # Ability to reduce risk by not paying debt (assets/liabilities)
+    'SHORT_RATIO_MAX': 1,
+    'DEBT_EQUITY_MAX': 2, #  How much debt is using to finance assets relative to equity
+    'PE_RATIO_MIN': 20,
+    'PE_RATIO_MAX': 60,
+    'PB_RATIO_MIN': 10,
+    'PB_RATIO_MAX': 40,
+    'PEG_RATIO_MIN': 0.5,
+    'PEG_RATIO_MAX': 1.5,
+    'RECOMMENDATION_MEAN_MIN': 1,
+    'RECOMMENDATION_MEAN_MAX': 2,
+    'ROE_RATIO_MIN': 10,
+    # Classification thresholds
+    'MAX_RRR': 0.8,
     'RSI_THRESHOLD_BUY': args.rsi_buy_threshold if args.rsi_buy_threshold else 25,
     'RSI_THRESHOLD_SELL': args.rsi_sell_threshold if args.rsi_sell_threshold else 75,
+    # Fetching parameters
     'MIN_RESULTS': args.min_results if args.min_results else 5,
-    'MAX_RRR': 0.8,
-    'PE_RATIO_MIN': 10,
-    'PE_RATIO_MAX': 30,
-    'PB_RATIO_MAX': 3,
-    'ROE_RATIO_MAX': 10,
-    'CURRENT_RATIO_MAX': 1.5,
-    'DEBT_EQUITY_MAX': 0.5,
     'RETRY_ATTEMPTS': 5,
-    'LOG_FILE': 'trading_decision_log.txt',
     'MAX_WORKERS': 5,
     'CONNECTION_POOL_SIZE': False,
+    'TICKER_FETCHING_PERIODS': ["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"],
+    'TICKER_FETCHING_INTERVALS': ["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"],
+    # Logging
+    'LOG_FILE': 'trading_decision_log.txt',
+    # Tickers sources
     'TICKERS_LISTS': [
         {'name': 'bmv_nasdaq_tickers', 'tickers': bmv_tickers.tickers + nasdaq_tickers.tickers,
          'description': 'BMV and NASDAQ'},
@@ -46,8 +62,6 @@ CONFIG = {
          'description': 'All'},
         {'name': 'custom_tickers', 'tickers': [], 'description': 'Custom'},
     ],
-    'TICKER_FETCHING_PERIODS': ["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"],
-    'TICKER_FETCHING_INTERVALS': ["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"],
 }
 
 # Configure logging with timestamps
