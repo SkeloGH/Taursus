@@ -3,7 +3,7 @@ import logging
 import talib
 
 from config import CONFIG
-from ticker_data import fetch_tickers
+from ticker_data import get_tickers_historical_data
 
 def get_ticker_signals(data, ticker):
     """
@@ -18,27 +18,27 @@ def get_ticker_signals(data, ticker):
     """
     ticker_data = data[ticker]
     close_prices = ticker_data['Close'].ffill()
-    rsi = talib.RSI(close_prices, timeperiod=CONFIG['RSI_PERIOD'])
+    rsi = talib.RSI(close_prices, timeperiod=CONFIG['RSI_PERIOD']).dropna()
     macd, macd_signal, _ = talib.MACD(close_prices,\
                                       fastperiod=CONFIG['MACD_FAST_PERIOD'],\
                                         slowperiod=CONFIG['MACD_SLOW_PERIOD'],\
                                         signalperiod=CONFIG['MACD_SIGNAL_PERIOD'])
 
-    close_prices_value = close_prices.iloc[-1]
-    rsi_value = rsi.iloc[-1]
+    close_price_value = close_prices.iloc[-1]
+    close_rsi = rsi.iloc[-1]
     macd_value = macd.iloc[-1]
     macd_signal_value = macd_signal.iloc[-1]
     # These default to the last close price
-    ticker_high = ticker_data['High'].iloc[-1] if 'High' in ticker_data else close_prices_value
-    ticker_low = ticker_data['Low'].iloc[-1] if 'Low' in ticker_data else close_prices_value
+    ticker_high = ticker_data['High'].iloc[-1] if 'High' in ticker_data else close_price_value
+    ticker_low = ticker_data['Low'].iloc[-1] if 'Low' in ticker_data else close_price_value
 
     ticker_signals = {
-            'RSI': rsi_value,
+            'RSI': close_rsi,
             'MACD': macd_value,
             'MACD Signal': macd_signal_value,
             'High': ticker_high,
             'Low': ticker_low,
-            'Close': close_prices_value
+            'Close': close_price_value
         }
     return ticker_signals
 
@@ -60,17 +60,18 @@ def identify_bullish_bearish(data,
     """
     bullish_tickers = {}
     bearish_tickers = {}
-    rsi_threshold_buy = rsi_buy
-    rsi_threshold_sell = rsi_sell
 
     logging.info("Identifying bullish and bearish tickers...")
     for ticker in tickers:
         try:
             ticker_signals = get_ticker_signals(data, ticker)
-            is_rsi_buy = ticker_signals['RSI'] <= rsi_threshold_buy
-            is_rsi_sell = ticker_signals['RSI'] >= rsi_threshold_sell
-            is_macd_buy = ticker_signals['MACD'] >= ticker_signals['MACD Signal']
-            is_macd_sell = ticker_signals['MACD'] <= ticker_signals['MACD Signal']
+            rsi = ticker_signals['RSI']
+            macd = ticker_signals['MACD']
+            macd_signal = ticker_signals['MACD Signal']
+            is_rsi_buy = rsi <= rsi_buy
+            is_rsi_sell = rsi >= rsi_sell
+            is_macd_buy = macd >= macd_signal
+            is_macd_sell = macd <= macd_signal
 
             if is_rsi_buy and is_macd_buy:
                 bullish_tickers[ticker] = data[ticker]
@@ -85,44 +86,51 @@ def identify_bullish_bearish(data,
 
     return bullish_tickers, bearish_tickers
 
-def classify_tickers(data, tickers):
+def classify_tickers(ticker_objects, tickers):
     """
-    Classifies tickers as bullish or bearish based on the given indicators.
+    Classifies tickers as bullish or bearish based on the configured indicators.
 
     Args:
-        data (pandas.DataFrame): Data for tickers.
+        ticker_objects (list): List of yfinance.Ticker objects.
         tickers (list): List of tickers to classify.
 
     Returns:
         tuple: Dictionaries of bullish and bearish tickers.
     """
     # Identify bullish and bearish tickers
-    time_periods = ["1d", "5d", "1mo"]
-    interval = "5m" # I removed the refetch call
     rsi_threshold_buy = CONFIG['RSI_THRESHOLD_BUY']
     rsi_threshold_sell = CONFIG['RSI_THRESHOLD_SELL']
-    attempts = 0
     min_results = CONFIG['MIN_RESULTS']
-    bullish_tickers, bearish_tickers = identify_bullish_bearish(data, tickers)
-    combined_tickers = list(bullish_tickers.keys()) + list(bearish_tickers.keys())
+    # time_periods = ["1d", "5d", "1mo"]
+    # interval = ["5m", "15m", "1d"]
+    time_periods = ["1mo"]
+    interval = ["1d"]
+    attempts = 0
+    bullish_tickers = {}
+    bearish_tickers = {}
 
     while (len(bullish_tickers) < min_results or len(bearish_tickers) < min_results) and attempts < len(time_periods):
+        # Adjust thresholds to be more lenient
+        rsi_threshold_buy += (5 if attempts > 0 else 0)
+        rsi_threshold_sell -= (5 if attempts > 0 else 0)
         logging.info(
-            f"Attempt {attempts + 1}: "
+            f"Attempt {attempts}: "
             f"RSI thresholds - Buy < {rsi_threshold_buy}, Sell > {rsi_threshold_sell}, "
             f"Time period - {time_periods[attempts]}"
         )
-        # Adjust thresholds to be more lenient
-        rsi_threshold_buy += 5
-        rsi_threshold_sell -= 5
-        attempts += 1
         if attempts < len(time_periods):
             logging.info(f"Adjusting data period to {time_periods[attempts]} and retrying...")
-            data = fetch_tickers(tickers, time_periods[attempts], interval)
-            bullish_tickers, bearish_tickers = identify_bullish_bearish(data, combined_tickers)
+            data = get_tickers_historical_data(ticker_objects,
+                                               period=time_periods[attempts],
+                                               interval=interval[attempts])
+            bullish_tickers, bearish_tickers = identify_bullish_bearish(data,
+                                                                        tickers,
+                                                                        rsi_buy=rsi_threshold_buy,
+                                                                        rsi_sell=rsi_threshold_sell)
+            attempts += 1
 
     logging.info(
         f"Final results - Bullish: {len(bullish_tickers)}, Bearish: {len(bearish_tickers)}"
     )
 
-    return combined_tickers, bullish_tickers, bearish_tickers
+    return bullish_tickers, bearish_tickers

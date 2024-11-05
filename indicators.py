@@ -36,8 +36,8 @@ def get_buy_targets(ticker_data):
         tuple: Buy target price and stop-loss level.
     """
     close = ticker_data['Close'].dropna().values
-    high = ticker_data['High'].dropna().values if 'High' in ticker_data.columns and ticker_data['High'].notna().any() else close
-    low = ticker_data['Low'].dropna().values if 'Low' in ticker_data.columns and ticker_data['Low'].notna().any() else close
+    high = ticker_data['High'].dropna().values if 'High' in ticker_data.columns else close
+    low = ticker_data['Low'].dropna().values if 'Low' in ticker_data.columns else close
     if high is None or low is None:
         return None, None
 
@@ -48,7 +48,7 @@ def get_buy_targets(ticker_data):
     stop_loss = current_price - 1.5 * atr[-1]  # Stop-loss at 1.5x ATR
     return buy_target, stop_loss
 
-def generate_buy_targets(bullish_tickers, prices):
+def generate_buy_targets(bullish_tickers):
     """
     Generates buy target price and stop-loss level for the given tickers.
 
@@ -60,9 +60,8 @@ def generate_buy_targets(bullish_tickers, prices):
         list: List of buy targets.
     """
     buy_targets = []
-
     for ticker, ticker_data in bullish_tickers.items():
-        price = prices.get(ticker)
+        price = ticker_data['Close'][-1]
         buy_target, stop_loss = get_buy_targets(ticker_data)
         current_price = round(price, 2)
         buy_target = round(buy_target, 2)
@@ -81,7 +80,7 @@ def generate_buy_targets(bullish_tickers, prices):
 
     return buy_targets
 
-def generate_sell_targets(bearish_tickers, prices):
+def generate_sell_targets(bearish_tickers):
     """
     Generates sell target price and stop-loss level using Average True Range (ATR).
 
@@ -93,7 +92,7 @@ def generate_sell_targets(bearish_tickers, prices):
     """
     sell_targets = []
     for ticker, data in bearish_tickers.items(): # pylint: disable=unused-variable
-        price = prices.get(ticker)
+        price = data['Close'][-1]
         if price is None:
             continue
         current_price = round(price, 2)
@@ -113,7 +112,7 @@ def generate_sell_targets(bearish_tickers, prices):
 
     return sell_targets
 
-def generate_targets(bullish_tickers, bearish_tickers, prices):
+def generate_targets(bullish_tickers, bearish_tickers):
     """
     Generates buy and sell targets for bullish and bearish tickers.
 
@@ -125,8 +124,8 @@ def generate_targets(bullish_tickers, bearish_tickers, prices):
     Returns:
         tuple: Buy targets and sell targets.
     """
-    buy_targets = generate_buy_targets(bullish_tickers, prices)
-    sell_targets = generate_sell_targets(bearish_tickers, prices)
+    buy_targets = generate_buy_targets(bullish_tickers)
+    sell_targets = generate_sell_targets(bearish_tickers)
     return buy_targets, sell_targets
 
 def get_ticker_fundamentals(ticker_data):

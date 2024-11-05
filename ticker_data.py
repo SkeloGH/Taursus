@@ -5,14 +5,29 @@ import pytz
 import requests_cache
 import pandas as pd
 import numpy as np
-
+from tqdm import tqdm
 import yfinance as yf
 
 from config import CONFIG
+from indicators import get_ticker_fundamentals
+from filters import filter_by_fundamentals
 
 
 session = requests_cache.CachedSession('yfinance.cache')
 session.headers['User-agent'] = 'taursus/1.0'
+
+def is_market_open():
+    """
+    Checks if the market is currently open based on New York time.
+
+    Returns:
+        bool: True if the market is open, False otherwise.
+    """
+    ny_time = datetime.datetime.now(pytz.timezone('US/Eastern'))
+    if ny_time.weekday() < 5 and datetime.time(9, 30) <= ny_time.time() <= datetime.time(16, 0):
+        return True
+    return False
+
 
 def fetch_ticker(ticker_symbol):
     """
@@ -65,6 +80,7 @@ def fetch_tickers(tickers_list,
     """
     threads = CONFIG['CONNECTION_POOL_SIZE']
     periods = CONFIG['TICKER_FETCHING_PERIODS']
+    intervals = CONFIG['TICKER_FETCHING_INTERVALS']
     max_attempts = CONFIG['RETRY_ATTEMPTS']
     if not tickers_list:
         return {}
@@ -87,11 +103,12 @@ def fetch_tickers(tickers_list,
             attempt = 1
             while len(data) != len(tickers_list) and attempt < max_attempts:
                 period = periods[attempt % len(periods)]
+                interval = intervals[attempt % len(intervals)]
 
                 data = yf.download(
                     tickers_list,
-                    period="1mo",
-                    interval="1d",
+                    period=period,
+                    interval=interval,
                     group_by=group_by,
                     progress=progress,
                     threads=threads,
@@ -102,6 +119,25 @@ def fetch_tickers(tickers_list,
     except Exception as e:
         logging.error(f"Error fetching tickers: {e}")
         return {ticker: None for ticker in tickers_list}
+
+def fetch_tickers_by_fundamentals(ticker_list):
+    """
+    Retrieves tickers that pass the fundamental filters.
+
+    Returns:
+        list: List of tickers that meet fundamental criteria.
+    """
+    filtered_tickers = []
+
+    for ticker in tqdm(ticker_list):
+        ticker_data = fetch_ticker(ticker)
+        ticker_fundamentals = get_ticker_fundamentals(ticker_data)
+
+        if ticker_fundamentals is not None and filter_by_fundamentals(ticker_fundamentals):
+            filtered_tickers.append(ticker_data)
+
+
+    return filtered_tickers
 
 def fetch_tickers_prices(tickers_list):
     """
@@ -145,14 +181,23 @@ def fetch_tickers_prices(tickers_list):
         logging.error(f"Error extracting price for {ticker}: {e}, skipping...")
         return {ticker: None for ticker in tickers_list}
 
-def is_market_open():
+def get_tickers_historical_data(tickers_data, period="5d", interval="15m"):
     """
-    Checks if the market is currently open based on New York time.
+    Retrieves historical data for a list of tickers.
+
+    Parameters:
+        tickers_data (list): List of yfinance.Ticker objects.
+        period (str): Time period for the data.
+        interval (str): Time interval between data points.
 
     Returns:
-        bool: True if the market is open, False otherwise.
+        historical_data (dict): Dictionary with ticker symbols as keys and historical data as values.
     """
-    ny_time = datetime.datetime.now(pytz.timezone('US/Eastern'))
-    if ny_time.weekday() < 5 and datetime.time(9, 30) <= ny_time.time() <= datetime.time(16, 0):
-        return True
-    return False
+    historical_data = {}
+    for yticker in tqdm(tickers_data):
+        try:
+            symbol = yticker.info['symbol']
+            historical_data[symbol] = yticker.history(period=period, interval=interval)
+        except Exception as e:
+            logging.error(f"Error fetching historical data for {symbol}: {e}")
+    return historical_data
