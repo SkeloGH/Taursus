@@ -1,5 +1,6 @@
 """Calculates technical indicators and generates price targets."""
 import talib
+import logging
 import pandas as pd
 import numpy as np
 
@@ -24,23 +25,23 @@ def calculate_indicators(df):
         df['Close'].values, timeperiod=14)
     return df
 
-def generate_price_targets(df):
+def get_buy_targets(ticker_data):
     """
     Generates buy target price and stop-loss level using Average True Range (ATR).
 
     Parameters:
-        df (DataFrame): DataFrame with price data and indicators.
+        ticker_data
 
     Returns:
         tuple: Buy target price and stop-loss level.
     """
-    high = df['High'].values if 'High' in df.columns and df['High'].notna().any() else None
-    low = df['Low'].values if 'Low' in df.columns and df['Low'].notna().any() else None
+    close = ticker_data['Close'].dropna().values
+    high = ticker_data['High'].dropna().values if 'High' in ticker_data.columns and ticker_data['High'].notna().any() else close
+    low = ticker_data['Low'].dropna().values if 'Low' in ticker_data.columns and ticker_data['Low'].notna().any() else close
     if high is None or low is None:
         return None, None
 
     # Values rounded to 2 decimal places
-    close = df['Close'].values
     atr = talib.ATR(high, low, close, timeperiod=14)
     current_price = close[-1]
     buy_target = current_price * 1.02  # Target price 2% higher
@@ -49,7 +50,7 @@ def generate_price_targets(df):
 
 def generate_buy_targets(bullish_tickers, prices):
     """
-    Generates buy target price and stop-loss level using Average True Range (ATR).
+    Generates buy target price and stop-loss level for the given tickers.
 
     Parameters:
         bullish_tickers (dict): Dictionary of bullish tickers.
@@ -59,17 +60,10 @@ def generate_buy_targets(bullish_tickers, prices):
         list: List of buy targets.
     """
     buy_targets = []
-    atr_period = 14
 
-    for ticker, data in bullish_tickers.items():
+    for ticker, ticker_data in bullish_tickers.items():
         price = prices.get(ticker)
-        df = pd.DataFrame([data])
-        df['Close'] = price
-
-        if len(df) < atr_period or np.isnan(price):
-            continue
-
-        buy_target, stop_loss = generate_price_targets(df)
+        buy_target, stop_loss = get_buy_targets(ticker_data)
         current_price = round(price, 2)
         buy_target = round(buy_target, 2)
         stop_loss = round(stop_loss, 2)

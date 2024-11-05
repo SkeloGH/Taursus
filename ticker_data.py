@@ -125,27 +125,24 @@ def fetch_tickers_prices(tickers_list):
         prices = {}
 
         for ticker in tickers_list:
-            try:
-                ticker_data = data[ticker]
-                latest_close = ticker_data['Close'].iloc[-1]
-                prices[ticker] = latest_close
-                if len(prices) < atr_period or np.isnan(latest_close):
-                    ticker_data = fetch_ticker(ticker)
-                    extended_prices = ticker_data.history(period='1mo', interval='1d')
-                    # Validate that we have at least 14 days of data
-                    if len(extended_prices) >= atr_period:
-                        df = pd.DataFrame(extended_prices)
-                        prices[ticker] = df['Close'].iloc[-1]
-                    else:
-                        logging.warning("No data found for ticker %s", ticker)
-                        continue
-            except Exception as e:
-                logging.error(f"Error extracting price for {ticker}: {e}, skipping...")
-                continue
+            ticker_data = data[ticker]
+            latest_close = ticker_data['Close'].iloc[-1]
+            prices[ticker] = latest_close
+
+            # Check if we have at least 14 data entries to calculate ATR
+            if len(ticker_data) < atr_period or np.isnan(latest_close):
+                ticker_data = fetch_ticker(ticker)
+                extended_prices = ticker_data.history(period='1mo', interval='1d')
+                if len(extended_prices) >= atr_period:
+                    df = pd.DataFrame(extended_prices)
+                    prices[ticker] = df['Close'].iloc[-1]
+                else:
+                    logging.warning("No data found for ticker %s", ticker)
+                    continue
 
         return prices
     except Exception as e:
-        logging.error(f"Error fetching real-time prices: {e}")
+        logging.error(f"Error extracting price for {ticker}: {e}, skipping...")
         return {ticker: None for ticker in tickers_list}
 
 def is_market_open():

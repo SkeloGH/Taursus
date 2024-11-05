@@ -73,9 +73,9 @@ def identify_bullish_bearish(data,
             is_macd_sell = ticker_signals['MACD'] <= ticker_signals['MACD Signal']
 
             if is_rsi_buy and is_macd_buy:
-                bullish_tickers[ticker] = ticker_signals
+                bullish_tickers[ticker] = data[ticker]
             elif is_rsi_sell and is_macd_sell:
-                bearish_tickers[ticker] = ticker_signals
+                bearish_tickers[ticker] = data[ticker]
         except KeyError as e:
             logging.error(f"Error processing data for {ticker}: {e}")
             continue
