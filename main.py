@@ -39,12 +39,12 @@ def main():
                       %s""", len(compliant_ticker_names), ', '.join(compliant_ticker_names))
 
     # Identify the top movers
-    bullish_tickers, bearish_tickers = classify_tickers(compliant_tickers_data, compliant_ticker_names)
+    bullish_tickers, bearish_tickers = classify_tickers(compliant_tickers_data)
     # Fetch prices
     # prices = fetch_tickers_prices(compliant_ticker_names)
     # Generate buy and sell targets
     buy_targets, sell_targets = generate_targets(bullish_tickers, bearish_tickers)
-    formatted_summary = format_summary(buy_targets, sell_targets)
+    formatted_summary = format_summary(compliant_tickers_data, buy_targets, sell_targets)
 
     # Generate and display summary
     output_summary(formatted_summary)

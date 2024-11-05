@@ -1,29 +1,5 @@
 """Calculates technical indicators and generates price targets."""
 import talib
-import logging
-import pandas as pd
-import numpy as np
-
-def calculate_indicators(df):
-    """
-    Calculates technical indicators using TA-Lib.
-
-    Parameters:
-        df (DataFrame): DataFrame containing stock price data.
-
-    Returns:
-        DataFrame: DataFrame with added technical indicators.
-    """
-    close_values = df['Close'].values.flatten()
-    df['RSI'] = talib.RSI(close_values, timeperiod=14)
-    df['MACD'], df['MACD_signal'], _ = talib.MACD(close_values, fastperiod=12, slowperiod=26, signalperiod=9)
-    df['SMA_50'] = talib.SMA(close_values, timeperiod=50)
-    df['SMA_200'] = talib.SMA(close_values, timeperiod=200)
-    df['ATR'] = talib.ATR(
-        df['High'].values if 'High' in df.columns else np.array([df['Close'].iloc[-1]]),
-        df['Low'].values if 'Low' in df.columns else np.array([df['Close'].iloc[-1]]),
-        df['Close'].values, timeperiod=14)
-    return df
 
 def get_buy_targets(ticker_data):
     """
@@ -59,24 +35,23 @@ def generate_buy_targets(bullish_tickers):
     Returns:
         list: List of buy targets.
     """
-    buy_targets = []
+    buy_targets = {}
     for ticker, ticker_data in bullish_tickers.items():
-        price = ticker_data['Close'][-1]
+        last_closing_price = ticker_data['Close'].iloc[-1]
         buy_target, stop_loss = get_buy_targets(ticker_data)
-        current_price = round(price, 2)
+        current_price = round(last_closing_price, 2)
         buy_target = round(buy_target, 2)
         stop_loss = round(stop_loss, 2)
-        risk = round(price - stop_loss, 2)
+        risk = round(last_closing_price - stop_loss, 2)
         reward = round(buy_target - current_price, 2)
         rrr = round(reward/risk, 2)
-        buy_targets.append({
-            'Ticker': ticker,
+        buy_targets[ticker] = {
             'Signal': 'Buy',
             'Current Price': current_price,
             'Target Price': buy_target,
             'Stop-Loss': stop_loss,
             'RRR': rrr # Risk Reward Ratio
-        })
+        }
 
     return buy_targets
 
@@ -90,9 +65,9 @@ def generate_sell_targets(bearish_tickers):
     Returns:
         tuple: Sell target price and stop-loss level.
     """
-    sell_targets = []
+    sell_targets = {}
     for ticker, data in bearish_tickers.items(): # pylint: disable=unused-variable
-        price = data['Close'][-1]
+        price = data['Close'].iloc[-1]
         if price is None:
             continue
         current_price = round(price, 2)
@@ -101,14 +76,14 @@ def generate_sell_targets(bearish_tickers):
         risk = round(current_price - stop_loss, 2)
         reward = round(target_price - current_price, 2)
         rrr = round(reward/risk, 2)
-        sell_targets.append({
+        sell_targets[ticker] = {
             'Ticker': ticker,
             'Signal': 'Sell',
             'Current Price': current_price,
             'Target Price': target_price,
             'Stop-Loss': stop_loss,
             'RRR': rrr # Risk Reward Ratio
-        })
+        }
 
     return sell_targets
 

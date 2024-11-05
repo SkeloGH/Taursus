@@ -15,41 +15,58 @@ def reset_decision_log():
     else:
         logging.info("The decision log will continue to be appended.")
 
-def ticker_meta(ticker):
+def ticker_meta(ticker_prices, tickers_objects):
     """
     Includes ticker metadata in the summary.
 
     Parameters:
-        ticker (str): Ticker symbol.
+        ticker_prices (dict): Ticker price data.
+        tickers_objects (list): Ticker objects with metadata.
 
     Returns:
         dict: Ticker metadata.
     """
-    return {
-        'ticker': ticker,
-        'name': ticker.info['shortName'],
-        'sector': ticker.info['sector'],
-        'industry': ticker.info['industry'],
-    }
+    tickers_collection = []
+    for ticker in tickers_objects:
+        symbol = ticker.info['symbol']
+        if symbol not in ticker_prices:
+            continue
+        ticker_price_targets = ticker_prices[symbol]
+        tickers_collection.append({
+            'Ticker': symbol,
+            'Signal': ticker_price_targets['Signal'],
+            'Current Price': ticker_price_targets['Current Price'],
+            'Target Price': ticker_price_targets['Target Price'],
+            'Stop-Loss': ticker_price_targets['Stop-Loss'],
+            'RRR': ticker_price_targets['RRR'],
+            'Name': ticker.info['shortName'],
+            'Sector': ticker.info['sector'],
+            'Industry': ticker.info['industry'],
+        })
+    return tickers_collection
 
-def format_summary(buy_targets, sell_targets):
+def format_summary(tickers_objects, buy_targets, sell_targets):
     """
     Formats the summary of trading actions as a string.
 
     Parameters:
-        summary (list): List of trading actions.
+        tickers_objects (list): Ticker objects with metadata.
+        buy_targets (dict): Dictionary of buy targets.
+        sell_targets (dict): Dictionary of sell targets.
 
     Returns:
         str: Formatted summary of trading actions.
     """
+    bullish = ticker_meta(buy_targets, tickers_objects)
+    bearish = ticker_meta(sell_targets, tickers_objects)
     # Sort by risk/reward ratio
-    buy_targets.sort(key=lambda x: x['RRR'], reverse=True)
-    sell_targets.sort(key=lambda x: x['RRR'], reverse=True)
+    sorted_bullish = sorted(bullish, key=lambda x: x['RRR'], reverse=True)
+    sorted_bearish = sorted(bearish, key=lambda x: x['RRR'], reverse=True)
     # Filter targets which are too risky
-    buy_targets = [ticker_meta(target) for target in buy_targets if target['RRR'] > CONFIG['MAX_RRR']]
-    sell_targets = [ticker_meta(target) for target in sell_targets if target['RRR'] > CONFIG['MAX_RRR']]
-    combined_targets = buy_targets + sell_targets
-    return combined_targets
+    buy_targets = [target for target in sorted_bullish if target['RRR'] > CONFIG['MAX_RRR']]
+    sell_targets = [target for target in sorted_bearish if target['RRR'] > CONFIG['MAX_RRR']]
+    tickers_collection = buy_targets + sell_targets
+    return tickers_collection
 
 def output_summary(summary):
     """
