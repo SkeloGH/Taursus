@@ -94,15 +94,11 @@ def classify_tickers(ticker_objects):
         tuple: Dictionaries of bullish and bearish tickers.
     """
     # Identify bullish and bearish tickers
-    # rsi_threshold_buy = CONFIG['RSI_THRESHOLD_BUY']
-    # rsi_threshold_sell = CONFIG['RSI_THRESHOLD_SELL']
-    rsi_threshold_buy = 40
-    rsi_threshold_sell = 50
+    rsi_threshold_buy = CONFIG['RSI_THRESHOLD_BUY']
+    rsi_threshold_sell = CONFIG['RSI_THRESHOLD_SELL']
     min_results = CONFIG['MIN_RESULTS']
-    # time_periods = ["1d", "5d", "1mo"]
-    # interval = ["5m", "15m", "1d"]
-    time_periods = ["3mo"]
-    interval = ["1d"]
+    time_periods = ["1d", "5d", "1mo", "3mo"]
+    interval = ["5m", "15m", "1d", "1d"]
     attempts = 0
     bullish_tickers = {}
     bearish_tickers = {}
