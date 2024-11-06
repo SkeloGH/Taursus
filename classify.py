@@ -62,6 +62,8 @@ def identify_bullish_bearish(ticker_price_data,
     logging.info("Identifying bullish and bearish tickers...")
     for ticker in ticker_price_data:
         try:
+            if ticker_price_data[ticker].empty:
+                continue
             ticker_signals = get_ticker_signals(ticker_price_data, ticker)
             rsi = ticker_signals['RSI']
             macd = ticker_signals['MACD']
@@ -97,8 +99,7 @@ def classify_tickers(ticker_objects):
     rsi_threshold_buy = CONFIG['RSI_THRESHOLD_BUY']
     rsi_threshold_sell = CONFIG['RSI_THRESHOLD_SELL']
     min_results = CONFIG['MIN_RESULTS']
-    time_periods = ["1d", "5d", "1mo", "3mo"]
-    interval = ["5m", "15m", "1d", "1d"]
+    time_periods = ["1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"]
     attempts = 0
     bullish_tickers = {}
     bearish_tickers = {}
@@ -111,12 +112,12 @@ def classify_tickers(ticker_objects):
             f"Attempt {attempts + 1}: "
             f"RSI thresholds - Buy < {rsi_threshold_buy}, Sell > {rsi_threshold_sell}, "
             f"Time period - {time_periods[attempts]}, "
-            f"Interval - {interval[attempts]}"
+            f"Interval - 1d"
         )
         if attempts < len(time_periods):
             ticker_price_data = get_tickers_historical_data(ticker_objects,
                                                period=time_periods[attempts],
-                                               interval=interval[attempts])
+                                               interval="1d")
             bullish_tickers, bearish_tickers = identify_bullish_bearish(ticker_price_data,
                                                                         rsi_buy=rsi_threshold_buy,
                                                                         rsi_sell=rsi_threshold_sell)
