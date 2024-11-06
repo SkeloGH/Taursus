@@ -39,9 +39,9 @@ def ticker_meta(ticker_prices, tickers_objects):
             'Target Price': ticker_price_targets['Target Price'],
             'Stop-Loss': ticker_price_targets['Stop-Loss'],
             'RRR': ticker_price_targets['RRR'],
-            'Name': ticker.info['shortName'],
-            'Sector': ticker.info['sector'],
-            'Industry': ticker.info['industry'],
+            'Name': ticker.info.get('shortName'),
+            'Sector': ticker.info.get('sector'),
+            'Industry': ticker.info.get('industry'),
         })
     return tickers_collection
 
@@ -65,8 +65,8 @@ def format_summary(tickers_objects, buy_targets, sell_targets):
     # Filter targets which are too risky
     buy_targets = [target for target in sorted_bullish if target['RRR'] > CONFIG['MAX_RRR']]
     sell_targets = [target for target in sorted_bearish if target['RRR'] > CONFIG['MAX_RRR']]
-    tickers_collection = buy_targets + sell_targets
-    return tickers_collection
+    trading_signals = buy_targets + sell_targets
+    return trading_signals
 
 def output_summary(summary):
     """
@@ -78,3 +78,5 @@ def output_summary(summary):
     logging.info("Generating summary...")
     summary_df = pd.DataFrame(summary)
     logging.info("""Summary of trading signals: \n%s""", summary_df)
+    # Concatenated list of tickers
+    logging.info("Tickers in the summary: %s", ', '.join(summary_df['Ticker'].tolist()))
