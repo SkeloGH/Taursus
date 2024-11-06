@@ -58,7 +58,8 @@ tickers = [
     "BBY", # Best Buy Co., Inc.
     "BDX", # Becton, Dickinson and Company
     "BEN", # Franklin Resources, Inc.
-    "BF",  # Brown-Forman Corporation
+    "BF-A",  # Brown-Forman Corporation
+    "BF-B",  # Brown-Forman Corporation
     "BG", # Bunge Global SA
     "BIIB", # Biogen Inc.
     "BK", # The Bank of New York Mellon Corporation
@@ -68,7 +69,8 @@ tickers = [
     "BLK", # BlackRock, Inc.
     "BMY", # Bristol-Myers Squibb Company
     "BR", # Broadridge Financial Solutions, Inc.
-    "BRK", # Berkshire Hathaway Inc.
+    "BRK-A", # Berkshire Hathaway Inc.
+    "BRK-B", # Berkshire Hathaway Inc.
     "BRO", # Brown & Brown, Inc.
     "BSX", # Boston Scientific Corporation
     "BWA", # BorgWarner Inc.
