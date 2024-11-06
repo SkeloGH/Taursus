@@ -22,7 +22,7 @@ args = parser.parse_known_args()[0]
 
 CONFIG = {
     # Fundamental analysis thresholds
-    'TRAILING_EPS_MIN': 2,
+    'TRAILING_EPS_MIN': 2, # EPS over prior fiscal year
     'EARNINGS_GROWTH_MIN': 0.20,
     'REVENUE_GROWTH_MIN': 0.20,
     'CURRENT_RATIO_MIN': 1.5, # Ability to reduce risk by not paying debt (assets/liabilities)
