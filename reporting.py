@@ -108,6 +108,7 @@ def print_trading_signals(summary):
     summary_df = pd.DataFrame(summary)
     logging.info("""Summary of trading signals: \n%s""", summary_df)
     # Save summary as a CSV file
+    logging.info("""Saving summary as a CSV file: %s""", CONFIG['SUMMARY_FILE'])
     summary_df.to_csv(CONFIG['SUMMARY_FILE'], index=False)
     # Concatenated list of tickers
     logging.info("Tickers in the summary: %s", ', '.join(summary_df['Ticker'].tolist()))
