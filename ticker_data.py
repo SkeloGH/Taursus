@@ -129,6 +129,8 @@ def fetch_tickers_by_fundamentals(ticker_list):
     """
     filtered_tickers = []
 
+    logging.info("Fetching tickers data for %d tickers...", len(ticker_list))
+
     for ticker in tqdm(ticker_list):
         ticker_data = fetch_ticker(ticker)
         ticker_fundamentals = get_ticker_fundamentals(ticker_data)

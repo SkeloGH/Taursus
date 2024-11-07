@@ -85,7 +85,7 @@ def identify_bullish_bearish(ticker_price_data,
 
     return bullish_tickers, bearish_tickers
 
-def classify_tickers(ticker_objects):
+def filter_bullish_bearish(ticker_objects):
     """
     Classifies tickers as bullish or bearish based on the configured indicators.
 

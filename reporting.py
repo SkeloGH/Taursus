@@ -62,21 +62,52 @@ def format_summary(tickers_objects, buy_targets, sell_targets):
     # Sort by risk/reward ratio
     sorted_bullish = sorted(bullish, key=lambda x: x['RRR'], reverse=True)
     sorted_bearish = sorted(bearish, key=lambda x: x['RRR'], reverse=True)
-    # Filter targets which are too risky
-    buy_targets = [target for target in sorted_bullish if target['RRR'] > CONFIG['MAX_RRR']]
-    sell_targets = [target for target in sorted_bearish if target['RRR'] > CONFIG['MAX_RRR']]
+    # Clears entries that don't meet the presentation criteria
+    buy_targets, sell_targets = filter_targets(sorted_bullish, sorted_bearish)
     trading_signals = buy_targets + sell_targets
     return trading_signals
 
-def output_summary(summary):
+def filter_targets(sorted_bullish, sorted_bearish):
+    """
+    Filters the targets that are too risky, or without relevant information.
+
+    Parameters:
+        sorted_bullish (list): Sorted list of buy targets.
+        sorted_bearish (list): Sorted list of sell targets.
+
+    Returns:
+        tuple: Filtered buy and sell targets.
+    """
+    buy_targets = []
+    sell_targets = []
+    for target in sorted_bullish + sorted_bearish:
+        is_finite_rrr = target['RRR'] != float('inf')
+        is_within_max_rrr = target['RRR'] >= CONFIG['MAX_RRR']
+        has_sector = target['Sector'] is not None
+        has_industry = target['Industry'] is not None
+        is_bullish = target['Signal'] == 'Buy'
+        meets_criteria = is_finite_rrr and is_within_max_rrr and has_sector and has_industry
+
+        if is_bullish and meets_criteria:
+            buy_targets.append(target)
+        elif not is_bullish and meets_criteria:
+            sell_targets.append(target)
+
+    return buy_targets, sell_targets
+
+def print_trading_signals(summary):
     """
     Generates and displays a summary of the trading actions.
 
     Parameters:
         summary (list): List of trading actions.
     """
+    # Resets the decision log when using --reset-log
+    reset_decision_log()
     logging.info("Generating summary...")
     summary_df = pd.DataFrame(summary)
     logging.info("""Summary of trading signals: \n%s""", summary_df)
+    # Save summary as a CSV file
+    summary_df.to_csv(CONFIG['SUMMARY_FILE'], index=False)
     # Concatenated list of tickers
     logging.info("Tickers in the summary: %s", ', '.join(summary_df['Ticker'].tolist()))

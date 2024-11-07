@@ -2,34 +2,30 @@
 import logging
 
 from config import CONFIG
-from user_inputs import handle_keyboard_interrupt, prompt_ticker_selection, prompt_custom_ticker_list
-from tickers import get_tickers_list_by_index
-from ticker_data import fetch_tickers_by_fundamentals
-from classify import classify_tickers
-from indicators import generate_targets
-from reporting import reset_decision_log, output_summary, format_summary
+import user_inputs
+import tickers
+import ticker_data
+import classifier
+import indicators
+import reporting
 
-@handle_keyboard_interrupt
+@user_inputs.handle_keyboard_interrupt
 def main():
     """
     Main function that executes the trading analysis.
     """
-    choice = prompt_ticker_selection()
+    choice = user_inputs.prompt_ticker_selection()
     # Get the tickers list based on the user's choice
-    selected_tickers = get_tickers_list_by_index(int(choice)-1)
+    selected_tickers = tickers.get_tickers_list_by_index(int(choice)-1)
     list_name = CONFIG['TICKERS_LISTS'][int(choice) - 1].get('name')
     # If user chose a custom list, get the selected tickers
     if list_name == 'custom_tickers':
-        selected_tickers = prompt_custom_ticker_list()
+        selected_tickers = user_inputs.prompt_custom_ticker_list()
 
     logging.info("Starting trading analysis...")
 
-    # Reset the decision log if the --reset-log argument is provided
-    reset_decision_log()
-
     # Apply fundamental filters
-    logging.info("Collecting tickers data...")
-    compliant_tickers_data = fetch_tickers_by_fundamentals(selected_tickers)
+    compliant_tickers_data = ticker_data.fetch_tickers_by_fundamentals(selected_tickers)
     compliant_ticker_names = [ticker.info['symbol'] for ticker in compliant_tickers_data]
     if not compliant_tickers_data:
         logging.info("No tickers passed the fundamental filters.")
@@ -39,13 +35,12 @@ def main():
                       %s""", len(compliant_ticker_names), ', '.join(compliant_ticker_names))
 
     # Identify the top movers
-    bullish_tickers, bearish_tickers = classify_tickers(compliant_tickers_data)
-    # Generate buy and sell targets
-    buy_targets, sell_targets = generate_targets(bullish_tickers, bearish_tickers)
-    trading_signals = format_summary(compliant_tickers_data, buy_targets, sell_targets)
+    bullish_tickers, bearish_tickers = classifier.filter_bullish_bearish(compliant_tickers_data)
+    buy_targets, sell_targets = indicators.generate_targets(bullish_tickers, bearish_tickers)
+    trading_signals = reporting.format_summary(compliant_tickers_data, buy_targets, sell_targets)
 
-    # Generate and display summary
-    output_summary(trading_signals)
+    # Print the summary
+    reporting.print_trading_signals(trading_signals)
 
 if __name__ == "__main__":
     main()

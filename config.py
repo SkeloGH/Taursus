@@ -45,7 +45,7 @@ CONFIG = {
     'RSI_THRESHOLD_BUY': args.rsi_buy_threshold if args.rsi_buy_threshold else 30,
     'RSI_THRESHOLD_SELL': args.rsi_sell_threshold if args.rsi_sell_threshold else 65,
     # Risk management
-    'MAX_RRR': 0.8,
+    'MAX_RRR': 0.8, # Ideal ratio is 1 and higher
     # Fetching parameters
     'MIN_RESULTS': args.min_results if args.min_results else 5,
     'RETRY_ATTEMPTS': 5,
@@ -55,6 +55,7 @@ CONFIG = {
     'TICKER_FETCHING_INTERVALS': ["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"],
     # Logging
     'LOG_FILE': 'trading_decision_log.txt',
+    'SUMMARY_FILE': 'trading_summary.csv',
     # Tickers sources
     'TICKERS_LISTS': [
         {'name': 'bmv_nasdaq_tickers', 'tickers': bmv_tickers.tickers + nasdaq_tickers.tickers,
