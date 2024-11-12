@@ -41,8 +41,8 @@ CONFIG = {
     'MACD_FAST_PERIOD': 6,
     'MACD_SLOW_PERIOD': 13,
     'MACD_SIGNAL_PERIOD': 5,
-    'RSI_PERIOD': 7,
-    'RSI_THRESHOLD_BUY': args.rsi_buy_threshold if args.rsi_buy_threshold else 30,
+    'RSI_PERIOD': 14,
+    'RSI_THRESHOLD_BUY': args.rsi_buy_threshold if args.rsi_buy_threshold else 35,
     'RSI_THRESHOLD_SELL': args.rsi_sell_threshold if args.rsi_sell_threshold else 65,
     # Risk management
     'MAX_RRR': 0.8, # Ideal ratio is 1 and higher

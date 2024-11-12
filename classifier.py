@@ -17,7 +17,7 @@ def get_ticker_signals(data, ticker):
         dict: Dictionary of signals for the ticker.
     """
     ticker_data = data[ticker]
-    close_prices = ticker_data['Close'].ffill().sort_index(ascending=False)
+    close_prices = ticker_data['Close'].ffill().sort_index(ascending=True)
     rsi = talib.RSI(close_prices, timeperiod=CONFIG['RSI_PERIOD']).dropna()
     macd, macd_signal, _ = talib.MACD(close_prices,
                                       fastperiod=CONFIG['MACD_FAST_PERIOD'],
@@ -62,7 +62,9 @@ def identify_bullish_bearish(ticker_price_data,
     logging.info("Identifying bullish and bearish tickers...")
     for ticker in ticker_price_data:
         try:
-            if ticker_price_data[ticker].empty:
+            is_empty = ticker_price_data[ticker].empty
+            is_rsi_compliant = len(ticker_price_data[ticker]) >= CONFIG['RSI_PERIOD']
+            if is_empty or not is_rsi_compliant:
                 continue
             ticker_signals = get_ticker_signals(ticker_price_data, ticker)
             rsi = ticker_signals['RSI']
@@ -99,7 +101,8 @@ def filter_bullish_bearish(ticker_objects):
     rsi_threshold_buy = CONFIG['RSI_THRESHOLD_BUY']
     rsi_threshold_sell = CONFIG['RSI_THRESHOLD_SELL']
     min_results = CONFIG['MIN_RESULTS']
-    time_periods = ["1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"]
+    time_periods = ["3mo"]
+    interval = ["1d"]
     attempts = 0
     bullish_tickers = {}
     bearish_tickers = {}
@@ -117,7 +120,7 @@ def filter_bullish_bearish(ticker_objects):
         if attempts < len(time_periods):
             ticker_price_data = get_tickers_historical_data(ticker_objects,
                                                period=time_periods[attempts],
-                                               interval="1d")
+                                               interval=interval[attempts])
             bullish_tickers, bearish_tickers = identify_bullish_bearish(ticker_price_data,
                                                                         rsi_buy=rsi_threshold_buy,
                                                                         rsi_sell=rsi_threshold_sell)

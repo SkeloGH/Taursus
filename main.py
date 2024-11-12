@@ -27,12 +27,12 @@ def main():
     # Apply fundamental filters
     compliant_tickers_data = ticker_data.fetch_tickers_by_fundamentals(selected_tickers)
     compliant_ticker_names = [ticker.info['symbol'] for ticker in compliant_tickers_data]
+    num_compliant_tickers = len(compliant_ticker_names)
     if not compliant_tickers_data:
         logging.info("No tickers passed the fundamental filters.")
         return
     else:
-        logging.info("""%d tickers passed the fundamental filters:
-                      %s""", len(compliant_ticker_names), ', '.join(compliant_ticker_names))
+        logging.info("%d tickers passed the fundamental filters", num_compliant_tickers)
 
     # Identify the top movers
     bullish_tickers, bearish_tickers = classifier.filter_bullish_bearish(compliant_tickers_data)

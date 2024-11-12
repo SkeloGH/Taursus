@@ -111,4 +111,7 @@ def print_trading_signals(summary):
     logging.info("""Saving summary as a CSV file: %s""", CONFIG['SUMMARY_FILE'])
     summary_df.to_csv(CONFIG['SUMMARY_FILE'], index=False)
     # Concatenated list of tickers
+    if summary_df.empty:
+        logging.info("No tickers in the summary.")
+        return
     logging.info("Tickers in the summary: %s", ', '.join(summary_df['Ticker'].tolist()))
