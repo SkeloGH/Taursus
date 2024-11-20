@@ -44,6 +44,8 @@ def generate_buy_targets(bullish_tickers):
         stop_loss = round(stop_loss, 2)
         risk = round(last_closing_price - stop_loss, 2)
         reward = round(buy_target - current_price, 2)
+        if risk <= 0 or reward <= 0:
+            continue
         rrr = round(reward/risk, 2)
         buy_targets[ticker] = {
             'Signal': 'Buy',
