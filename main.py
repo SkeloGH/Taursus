@@ -25,6 +25,7 @@ def main():
     logging.info("Starting trading analysis...")
 
     # Apply fundamental filters
+    ticker_data.initialize_session()
     compliant_tickers_data = ticker_data.fetch_tickers_by_fundamentals(selected_tickers)
     compliant_ticker_names = [ticker.info['symbol'] for ticker in compliant_tickers_data]
     num_compliant_tickers = len(compliant_ticker_names)

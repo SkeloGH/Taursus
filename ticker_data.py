@@ -12,9 +12,20 @@ from config import CONFIG
 from indicators import get_ticker_fundamentals
 from filters import filter_by_fundamentals
 
-
 session = requests_cache.CachedSession('yfinance.cache')
 session.headers['User-agent'] = 'taursus/1.0'
+
+def initialize_session():
+    """
+    Initializes the yfinance session.
+
+    Returns:
+        Session: Session object to use for fetching data."""
+    
+    # Send a warmup request
+    r = yf.Ticker('SPY', session=session)
+    logging.info("Warmup request sent: %s", r.info)
+    return session
 
 def is_market_open():
     """
@@ -133,6 +144,8 @@ def fetch_tickers_by_fundamentals(ticker_list):
 
     for ticker in tqdm(ticker_list):
         ticker_data = fetch_ticker(ticker)
+        if ticker_data is None:
+            continue
         ticker_fundamentals = get_ticker_fundamentals(ticker_data)
 
         if ticker_fundamentals is not None and filter_by_fundamentals(ticker_fundamentals):
