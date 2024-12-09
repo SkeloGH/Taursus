@@ -1,8 +1,23 @@
 """
 This module contains functions for applying filters to stock data.
 """
-
+import math
 from config import CONFIG
+
+def normalize_value(value):
+    """
+    Normalizes a value by replacing None and 'Infinify' with 0.
+
+    Parameters:
+        value (float): The value to normalize.
+
+    Returns:
+        float: The normalized value.
+    """
+    if isinstance(value, str):
+        return 0 if value.lower() == 'infinity' else value
+    else:
+        return value if value is not None and not math.isnan(value) and not math.isinf(value) else 0
 
 def filter_by_fundamentals(ticker_data):
     """
@@ -14,17 +29,17 @@ def filter_by_fundamentals(ticker_data):
     Returns:
         bool: True if the ticker passes the filter, False otherwise.
     """
-    trailing_eps = ticker_data['trailing_eps'] or 0
-    earnings_growth = ticker_data['earnings_growth'] or 0
-    revenue_growth = ticker_data['revenue_growth'] or 0
-    current_ratio = ticker_data['current_ratio'] or 0
-    short_ratio = ticker_data['short_ratio'] or 0
-    debt_equity = ticker_data['debt_equity'] or 0
-    peg_ratio = ticker_data['peg_ratio'] or 0
-    pb_ratio = ticker_data['pb_ratio'] or 0
-    pe_ratio = ticker_data['pe_ratio'] or 0
-    recommendation_mean = ticker_data['recommendation_mean'] or 0
-    return_on_equity = ticker_data['return_on_equity'] or 0
+    trailing_eps = normalize_value(ticker_data['trailing_eps'])
+    earnings_growth = normalize_value(ticker_data['earnings_growth'])
+    revenue_growth = normalize_value(ticker_data['revenue_growth'])
+    current_ratio = normalize_value(ticker_data['current_ratio'])
+    short_ratio = normalize_value(ticker_data['short_ratio'])
+    debt_equity = normalize_value(ticker_data['debt_equity'])
+    peg_ratio = normalize_value(ticker_data['peg_ratio'])
+    pb_ratio = normalize_value(ticker_data['pb_ratio'])
+    pe_ratio = normalize_value(ticker_data['pe_ratio'])
+    recommendation_mean = normalize_value(ticker_data['recommendation_mean'])
+    return_on_equity = normalize_value(ticker_data['return_on_equity'])
 
     return (
         trailing_eps >= CONFIG['TRAILING_EPS_MIN'] or
