@@ -6,6 +6,7 @@ import logging
 from tickers_lists import (
     bmv_tickers,
     nasdaq_tickers,
+    russell2k_tickers,
     other_tickers
 )
 
@@ -62,6 +63,7 @@ CONFIG = {
          'description': 'BMV and NASDAQ'},
         {'name': 'bmv_tickers', 'tickers': bmv_tickers.tickers, 'description': 'BMV'},
         {'name': 'nasdaq_tickers', 'tickers': nasdaq_tickers.tickers, 'description': 'NASDAQ'},
+        {'name': 'russell2k_tickers', 'tickers': russell2k_tickers.tickers, 'description': 'Russell 2000'},
         {'name': 'other_tickers', 'tickers': other_tickers.tickers, 'description': 'Other'},
         {'name': 'all_tickers',
          'tickers': bmv_tickers.tickers + nasdaq_tickers.tickers + other_tickers.tickers,
