@@ -27,7 +27,7 @@ def main():
     # Apply fundamental filters
     ticker_data.initialize_session()
     compliant_tickers_data = ticker_data.fetch_tickers_by_fundamentals(selected_tickers)
-    compliant_ticker_names = [ticker.info['symbol'] for ticker in compliant_tickers_data]
+    compliant_ticker_names = [ticker.ticker for ticker in compliant_tickers_data]
     num_compliant_tickers = len(compliant_ticker_names)
     if not compliant_tickers_data:
         logging.info("No tickers passed the fundamental filters.")
