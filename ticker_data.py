@@ -1,6 +1,7 @@
 """ Ticker data functions. """
 import datetime
 import logging
+import time
 import pytz
 import requests_cache
 import pandas as pd
@@ -21,10 +22,10 @@ def initialize_session():
 
     Returns:
         Session: Session object to use for fetching data."""
-    
+
     # Send a warmup request
     r = yf.Ticker('SPY', session=session)
-    logging.info("Warmup request sent: %s", r.info)
+    logging.info("Warmup request sent: %s", r.info.get('symbol'))
     return session
 
 def is_market_open():
@@ -55,8 +56,10 @@ def fetch_ticker(ticker_symbol):
     for attempt in range(retry_attempts):
         try:
             ticker_data = yf.Ticker(ticker_symbol, session=session)
+            # Wait 10ms before retrying
+            time.sleep(0.05)
             # Ticker might not exist or has been delisted, also ticker might return as a string
-            if not ticker_data.info or isinstance(ticker_data.info, str):
+            if not ticker_data or not ticker_data.info or isinstance(ticker_data.info, str):
                 logging.warning("Ticker %s does not exist or has been delisted.", ticker_symbol)
                 return None
             return ticker_data
