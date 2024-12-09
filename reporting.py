@@ -28,7 +28,7 @@ def ticker_meta(ticker_prices, tickers_objects):
     """
     tickers_collection = []
     for ticker in tickers_objects:
-        symbol = ticker.info['symbol']
+        symbol = ticker.ticker or ticker.info.get('symbol')
         if symbol not in ticker_prices:
             continue
         ticker_price_targets = ticker_prices[symbol]
