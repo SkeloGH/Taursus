@@ -66,7 +66,7 @@ CONFIG = {
         {'name': 'russell2k_tickers', 'tickers': russell2k_tickers.tickers, 'description': 'Russell 2000'},
         {'name': 'other_tickers', 'tickers': other_tickers.tickers, 'description': 'Other'},
         {'name': 'all_tickers',
-         'tickers': bmv_tickers.tickers + nasdaq_tickers.tickers + other_tickers.tickers,
+         'tickers': bmv_tickers.tickers + nasdaq_tickers.tickers + russell2k_tickers.tickers + other_tickers.tickers,
          'description': 'All'},
         {'name': 'custom_tickers', 'tickers': [], 'description': 'Custom'},
     ],
