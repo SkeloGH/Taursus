@@ -42,7 +42,7 @@ def get_ticker_signals(data, ticker):
         }
     return ticker_signals
 
-def identify_bullish_bearish(ticker_price_data,
+def classify_tickers(ticker_price_data,
                              rsi_buy=CONFIG['RSI_THRESHOLD_BUY'],
                              rsi_sell=CONFIG['RSI_THRESHOLD_SELL']):
     """
@@ -87,9 +87,10 @@ def identify_bullish_bearish(ticker_price_data,
 
     return bullish_tickers, bearish_tickers
 
-def filter_bullish_bearish(ticker_objects):
+def get_bullish_bearish(ticker_objects):
     """
-    Classifies tickers as bullish or bearish based on the configured indicators.
+    This is the strategy that identifies bullish and bearish tickers.
+    It is based on RSI and MACD over a month.
 
     Args:
         ticker_objects (list): List of yfinance.Ticker objects.
@@ -101,12 +102,13 @@ def filter_bullish_bearish(ticker_objects):
     rsi_threshold_buy = CONFIG['RSI_THRESHOLD_BUY']
     rsi_threshold_sell = CONFIG['RSI_THRESHOLD_SELL']
     min_results = CONFIG['MIN_RESULTS']
-    time_periods = ["3mo"]
-    interval = ["1d"]
+    time_periods = ["1mo"]
+    interval = ["30m"]
     attempts = 0
     bullish_tickers = {}
     bearish_tickers = {}
 
+    # Try different time periods until we get enough bullish and bearish tickers
     while (len(bullish_tickers) < min_results or len(bearish_tickers) < min_results) and attempts < len(time_periods):
         # Adjust thresholds to be more lenient
         rsi_threshold_buy += (5 if attempts > 0 else 0)
@@ -121,7 +123,7 @@ def filter_bullish_bearish(ticker_objects):
             ticker_price_data = get_tickers_historical_data(ticker_objects,
                                                period=time_periods[attempts],
                                                interval=interval[attempts])
-            bullish_tickers, bearish_tickers = identify_bullish_bearish(ticker_price_data,
+            bullish_tickers, bearish_tickers = classify_tickers(ticker_price_data,
                                                                         rsi_buy=rsi_threshold_buy,
                                                                         rsi_sell=rsi_threshold_sell)
             attempts += 1

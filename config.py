@@ -27,7 +27,7 @@ CONFIG = {
     'EARNINGS_GROWTH_MIN': 0.20,
     'REVENUE_GROWTH_MIN': 0.20,
     'CURRENT_RATIO_MIN': 1.5, # Ability to reduce risk by not paying debt (assets/liabilities)
-    'SHORT_RATIO_MAX': 1,
+    'SHORT_RATIO_MAX': 1, # How long it takes short sellers to repurchase (shares sold / Average daily volume)
     'DEBT_EQUITY_MAX': 2, #  How much debt is using to finance assets relative to equity
     'PE_RATIO_MIN': 20,
     'PE_RATIO_MAX': 60,

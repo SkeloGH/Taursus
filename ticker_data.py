@@ -13,19 +13,23 @@ from config import CONFIG
 from indicators import get_ticker_fundamentals
 from filters import filter_by_fundamentals
 
-session = requests_cache.CachedSession('yfinance.cache')
-session.headers['User-agent'] = 'taursus/1.0'
+yfinance_session  = None
+
+def get_session():
+    """Returns the yfinance session object."""
+    global yfinance_session
+    if yfinance_session is None:
+        yfinance_session = initialize_session()
+    return yfinance_session
 
 def initialize_session():
     """
     Initializes the yfinance session.
 
     Returns:
-        Session: Session object to use for fetching data."""
-
-    # Send a warmup request
-    r = yf.Ticker('SPY', session=session)
-    logging.info("Warmup request sent: %s", r.info.get('symbol'))
+        yfinance_session : Session object to use for fetching data."""
+    session = requests_cache.CachedSession('yfinance.cache')
+    session.headers['User-agent'] = 'taursus/1.0'
     return session
 
 def is_market_open():
@@ -52,6 +56,7 @@ def fetch_ticker(ticker_symbol):
     Returns:
         Ticker: Ticker object containing financial data.
     """
+    session = get_session()
     retry_attempts = CONFIG['RETRY_ATTEMPTS']
     for attempt in range(retry_attempts):
         try:
@@ -96,6 +101,7 @@ def fetch_tickers(tickers_list,
     periods = CONFIG['TICKER_FETCHING_PERIODS']
     intervals = CONFIG['TICKER_FETCHING_INTERVALS']
     max_attempts = CONFIG['RETRY_ATTEMPTS']
+    session = get_session()
     if not tickers_list:
         return {}
 
@@ -111,8 +117,7 @@ def fetch_tickers(tickers_list,
             session=session
         )
         # If incremental=True, when the tickers list size mismatch or is empty,
-        # adjust period and interval until they match,
-        # max attempt is 10
+        # adjust period and interval until they match
         if incremental:
             attempt = 1
             while len(data) != len(tickers_list) and attempt < max_attempts:
@@ -214,7 +219,7 @@ def get_tickers_historical_data(tickers_data, period="5d", interval="15m"):
     historical_data = {}
     for yticker in tqdm(tickers_data):
         try:
-            symbol = yticker.info['symbol']
+            symbol = yticker.info.get('symbol')
             historical_data[symbol] = yticker.history(period=period, interval=interval)
         except Exception as e:
             logging.error(f"Error fetching historical data for {symbol}: {e}")

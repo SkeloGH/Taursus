@@ -24,8 +24,13 @@ def main():
 
     logging.info("Starting trading analysis...")
 
-    # Apply fundamental filters
+    # Initialize yfinance session
     ticker_data.initialize_session()
+    # Send a warmup request
+    r = ticker_data.fetch_ticker('SPY')
+    logging.info("Warmup request sent: %s", r.info.get('symbol'))
+
+    # Apply fundamental filters
     compliant_tickers_data = ticker_data.fetch_tickers_by_fundamentals(selected_tickers)
     compliant_ticker_names = [ticker.ticker for ticker in compliant_tickers_data]
     num_compliant_tickers = len(compliant_ticker_names)
@@ -36,7 +41,7 @@ def main():
         logging.info("%d tickers passed the fundamental filters", num_compliant_tickers)
 
     # Identify the top movers
-    bullish_tickers, bearish_tickers = classifier.filter_bullish_bearish(compliant_tickers_data)
+    bullish_tickers, bearish_tickers = classifier.get_bullish_bearish(compliant_tickers_data)
     buy_targets, sell_targets = indicators.generate_targets(bullish_tickers, bearish_tickers)
     trading_signals = reporting.format_summary(compliant_tickers_data, buy_targets, sell_targets)
 
