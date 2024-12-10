@@ -186,7 +186,7 @@ tickers = [
     "MGM.MX",
     "MRK.MX",
     "MRNA.MX",
-    "MRO.MX",
+    # "MRO.MX",
     "MSFT.MX",
     "MU.MX",
     "NAFTRACISHRS.MX",
@@ -274,7 +274,7 @@ tickers = [
     "UBER.MX",
     "UNH.MX",
     "UPST.MX",
-    "USO.MX",
+    # "USO.MX",
     "VEA.MX",
     "VGT.MX",
     "VNQ.MX",
@@ -285,15 +285,16 @@ tickers = [
     "VYM.MX",
     "VZ.MX",
     "V.MX",
-    "WALMEX.MX",
-    "WFC.MX",
-    "WMT.MX",
-    "WYNN.MX",
-    "XLE.MX",
-    "XLF.MX",
-    "XLK.MX",
-    "XLV.MX",
-    "XOM.MX",
-    "X.MX",
-    "ZM.MX",
+    "WALMEX.MX", # Walmart Mexicana S.A.B. de C.V.
+    "WFC.MX", # Wells Fargo & Company
+    "WMI", # Waste Management, Inc.
+    "WMT.MX", # Walmart Inc.
+    "WYNN.MX", # Wynn Resorts, Limited
+    "XLE.MX", # Energy Select Sector Index Fund
+    "XLF.MX", # Financial Select Sector Index Fund
+    "XLK.MX", # Technology Select Sector Index Fund
+    "XLV.MX", # Health Care Select Sector Index Fund
+    "XOM.MX", # Exxon Mobil Corporation
+    "X.MX", # United States Steel Corporation
+    "ZM.MX", # Zoom Video Communications, Inc.
 ]
