@@ -7,3 +7,4 @@
 /venv
 yfinance.cache
 .env
+/.venv
