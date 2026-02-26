@@ -3,7 +3,6 @@ import datetime
 import logging
 import time
 import pytz
-import requests_cache
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -13,24 +12,8 @@ from config import CONFIG
 from indicators import get_ticker_fundamentals
 from filters import filter_by_fundamentals
 
-yfinance_session  = None
-
-def get_session():
-    """Returns the yfinance session object."""
-    global yfinance_session
-    if yfinance_session is None:
-        yfinance_session = initialize_session()
-    return yfinance_session
-
 def initialize_session():
-    """
-    Initializes the yfinance session.
-
-    Returns:
-        yfinance_session : Session object to use for fetching data."""
-    session = requests_cache.CachedSession('yfinance.cache')
-    session.headers['User-agent'] = 'taursus/1.0'
-    return session
+    """No-op: yfinance 1.x manages its own session via curl_cffi."""
 
 def is_market_open():
     """
@@ -56,11 +39,10 @@ def fetch_ticker(ticker_symbol):
     Returns:
         Ticker: Ticker object containing financial data.
     """
-    session = get_session()
     retry_attempts = CONFIG['RETRY_ATTEMPTS']
     for attempt in range(retry_attempts):
         try:
-            ticker_data = yf.Ticker(ticker_symbol, session=session)
+            ticker_data = yf.Ticker(ticker_symbol)
             # Wait 10ms before retrying
             time.sleep(0.05)
             # Ticker might not exist or has been delisted, also ticker might return as a string
@@ -101,7 +83,6 @@ def fetch_tickers(tickers_list,
     periods = CONFIG['TICKER_FETCHING_PERIODS']
     intervals = CONFIG['TICKER_FETCHING_INTERVALS']
     max_attempts = CONFIG['RETRY_ATTEMPTS']
-    session = get_session()
     if not tickers_list:
         return {}
 
@@ -114,7 +95,6 @@ def fetch_tickers(tickers_list,
             group_by=group_by,
             progress=progress,
             threads=threads,
-            session=session
         )
         # If incremental=True, when the tickers list size mismatch or is empty,
         # adjust period and interval until they match
@@ -131,7 +111,6 @@ def fetch_tickers(tickers_list,
                     group_by=group_by,
                     progress=progress,
                     threads=threads,
-                    session=session
                 )
                 attempt += 1
         return data

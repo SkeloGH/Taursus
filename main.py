@@ -28,7 +28,10 @@ def main():
     ticker_data.initialize_session()
     # Send a warmup request
     r = ticker_data.fetch_ticker('SPY')
-    logging.info("Warmup request sent: %s", r.info.get('symbol'))
+    if r is not None:
+        logging.info("Warmup request sent: %s", r.info.get('symbol'))
+    else:
+        logging.warning("Warmup request failed (rate limited?), continuing anyway...")
 
     # Apply fundamental filters
     compliant_tickers_data = ticker_data.fetch_tickers_by_fundamentals(selected_tickers)
