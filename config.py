@@ -16,9 +16,12 @@ parser.add_argument('--reset-log', action='store_false', help='Reset the decisio
 parser.add_argument('--rsi-buy-threshold', type=int, help='Custom RSI threshold for buy signals')
 parser.add_argument('--rsi-sell-threshold', type=int, help='Custom RSI threshold for sell signals')
 parser.add_argument('--min-results', type=int, help='Custom minimum number of required results')
+parser.add_argument('--ticker-list', type=str, help='Ticker list name to use (e.g. nasdaq_tickers)')
+parser.add_argument('--custom-tickers', type=str, help='Comma-separated list of custom tickers')
 # handle empty strings, missing or unspecified arguments
 parser.set_defaults(reset_log=True,
-                    rsi_buy_threshold=None, rsi_sell_threshold=None, min_results=None)
+                    rsi_buy_threshold=None, rsi_sell_threshold=None, min_results=None,
+                    ticker_list=None, custom_tickers=None)
 args = parser.parse_known_args()[0]
 
 CONFIG = {
